@@ -9,32 +9,32 @@ class ProviderDetector
     protected array $detected = [];
 
     protected array $classMap = [
-        'sentry' => 'Sentry\Laravel\ServiceProvider',
-        'bugsnag' => 'Bugsnag\BugsnagLaravel\BugsnagServiceProvider',
-        'flare' => 'Spatie\LaravelIgnition\IgnitionServiceProvider',
-        'rollbar' => 'Rollbar\Laravel\RollbarServiceProvider',
-        'honeybadger' => 'Honeybadger\HoneybadgerLaravel\HoneybadgerServiceProvider',
-        'appsignal' => 'Appsignal\Laravel\ServiceProvider',
+        'sentry'       => 'Sentry\Laravel\ServiceProvider',
+        'bugsnag'      => 'Bugsnag\BugsnagLaravel\BugsnagServiceProvider',
+        'flare'        => 'Spatie\LaravelIgnition\IgnitionServiceProvider',
+        'rollbar'      => 'Rollbar\Laravel\RollbarServiceProvider',
+        'honeybadger'  => 'Honeybadger\HoneybadgerLaravel\HoneybadgerServiceProvider',
+        'appsignal'    => 'Appsignal\Laravel\ServiceProvider',
         'link_checker' => 'Spatie\LinkChecker\LinkCheckerServiceProvider',
     ];
 
     protected array $credentialKeys = [
-        'sentry' => 'dsn',
-        'bugsnag' => 'api_key',
-        'flare' => 'key',
-        'rollbar' => 'access_token',
-        'raygun' => 'api_key',
-        'honeybadger' => 'api_key',
-        'airbrake' => 'project_key',
-        'new_relic' => 'license_key',
-        'datadog' => 'api_key',
-        'appsignal' => 'push_api_key',
-        'loggly' => 'token',
-        'logrocket' => 'app_id',
-        'instabug' => 'token',
-        'gleap' => 'api_key',
+        'sentry'          => 'dsn',
+        'bugsnag'         => 'api_key',
+        'flare'           => 'key',
+        'rollbar'         => 'access_token',
+        'raygun'          => 'api_key',
+        'honeybadger'     => 'api_key',
+        'airbrake'        => 'project_key',
+        'new_relic'       => 'license_key',
+        'datadog'         => 'api_key',
+        'appsignal'       => 'push_api_key',
+        'loggly'          => 'token',
+        'logrocket'       => 'app_id',
+        'instabug'        => 'token',
+        'gleap'           => 'api_key',
         'ghost_inspector' => 'api_key',
-        'memfault' => 'project_key',
+        'memfault'        => 'project_key',
     ];
 
     public function detect(): array
@@ -82,17 +82,17 @@ class ProviderDetector
         $providers = config('observability.providers', []);
 
         foreach ($providers as $name => $config) {
-            if (! ($config['enabled'] ?? false)) {
+            if (!($config['enabled'] ?? false)) {
                 continue;
             }
-            if (! in_array($config['type'] ?? 'backend', ['frontend', 'both'])) {
+            if (!in_array($config['type'] ?? 'backend', ['frontend', 'both'])) {
                 continue;
             }
             if (isset($config['js_snippet'])) {
                 $snippet = $config['js_snippet'];
                 foreach ($config as $key => $value) {
                     if (is_string($value)) {
-                        $snippet = str_replace('{' . $key . '}', $value, $snippet);
+                        $snippet = str_replace('{'.$key.'}', $value, $snippet);
                     }
                 }
                 $snippets[$name] = $snippet;
@@ -112,7 +112,7 @@ class ProviderDetector
 
     protected function isAvailable(string $name, array $config): bool
     {
-        if (isset($this->classMap[$name]) && ! class_exists($this->classMap[$name])) {
+        if (isset($this->classMap[$name]) && !class_exists($this->classMap[$name])) {
             return false;
         }
 

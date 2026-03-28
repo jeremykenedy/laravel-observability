@@ -27,10 +27,10 @@ class HealthDashboard extends Component
         $detector = app(ProviderDetector::class);
         $detector->detect();
         $this->providerData = [
-            'active' => $detector->getActiveProviders(),
-            'backend' => $detector->getProvidersByType('backend'),
+            'active'   => $detector->getActiveProviders(),
+            'backend'  => $detector->getProvidersByType('backend'),
             'frontend' => $detector->getProvidersByType('frontend'),
-            'testing' => $detector->getProvidersByType('testing'),
+            'testing'  => $detector->getProvidersByType('testing'),
         ];
     }
 

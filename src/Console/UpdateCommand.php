@@ -8,7 +8,6 @@ use Illuminate\Console\Command;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\note;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
@@ -29,7 +28,7 @@ class UpdateCommand extends Command
         $this->newLine();
 
         $envPath = base_path('.env');
-        if (! file_exists($envPath)) {
+        if (!file_exists($envPath)) {
             warning('No .env file found.');
 
             return self::FAILURE;
@@ -43,26 +42,26 @@ class UpdateCommand extends Command
         $detected = $detector->getDetected();
 
         info('Current status:');
-        $this->line("  Detected: ".implode(', ', $detected ?: ['none']));
-        $this->line("  Active:   ".implode(', ', $active ?: ['none']));
+        $this->line('  Detected: '.implode(', ', $detected ?: ['none']));
+        $this->line('  Active:   '.implode(', ', $active ?: ['none']));
         $this->newLine();
 
         // Options
         $action = \Laravel\Prompts\select(
             label: 'What would you like to do?',
             options: [
-                'config' => 'Re-publish config (update to latest version)',
+                'config'      => 'Re-publish config (update to latest version)',
                 'credentials' => 'Update credentials for active providers',
-                'toggle' => 'Enable/disable a provider',
-                'status' => 'Show detailed provider status',
+                'toggle'      => 'Enable/disable a provider',
+                'status'      => 'Show detailed provider status',
             ],
         );
 
         match ($action) {
-            'config' => $this->republishConfig(),
+            'config'      => $this->republishConfig(),
             'credentials' => $this->updateCredentials($envPath),
-            'toggle' => $this->toggleProvider($envPath),
-            'status' => $this->showStatus($detector),
+            'toggle'      => $this->toggleProvider($envPath),
+            'status'      => $this->showStatus($detector),
         };
 
         return self::SUCCESS;
@@ -86,7 +85,7 @@ class UpdateCommand extends Command
         $content = file_get_contents($envPath);
 
         foreach ($providers as $name => $config) {
-            if (! ($config['enabled'] ?? false)) {
+            if (!($config['enabled'] ?? false)) {
                 continue;
             }
 
@@ -102,8 +101,8 @@ class UpdateCommand extends Command
                 $envKey = strtoupper($name).'_'.strtoupper($key);
                 // Try common env key patterns
                 $envKey = match (true) {
-                    str_contains($content, "SENTRY_LARAVEL_DSN") && $name === 'sentry' => 'SENTRY_LARAVEL_DSN',
-                    default => strtoupper($name).'_'.strtoupper($key),
+                    str_contains($content, 'SENTRY_LARAVEL_DSN') && $name === 'sentry' => 'SENTRY_LARAVEL_DSN',
+                    default                                                            => strtoupper($name).'_'.strtoupper($key),
                 };
 
                 $current = env($envKey, '');
@@ -144,7 +143,7 @@ class UpdateCommand extends Command
         );
 
         $current = config("observability.providers.{$selected}.enabled", false);
-        $new = ! $current;
+        $new = !$current;
         $envKey = strtoupper($selected).'_ENABLED';
 
         $content = file_get_contents($envPath);
@@ -176,7 +175,7 @@ class UpdateCommand extends Command
         table(['Provider', 'Type', 'Enabled', 'Detected'], $rows);
 
         $uptime = config('observability.uptime', []);
-        if (! empty($uptime)) {
+        if (!empty($uptime)) {
             $this->newLine();
             info('Uptime Monitors:');
             foreach ($uptime as $name => $config) {
