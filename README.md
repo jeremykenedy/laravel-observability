@@ -9,6 +9,7 @@ A comprehensive observability package for Laravel with auto-detection of 20+ mon
 
 #### Table of Contents
 - [Features](#features)
+- [All Supported Providers](#all-supported-providers)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Backend Providers](#backend-providers)
@@ -36,6 +37,35 @@ A comprehensive observability package for Laravel with auto-detection of 20+ mon
 | Per-provider enable/disable via .env |
 | Provider type classification (backend, frontend, both, testing) |
 | Publishable config via artisan |
+
+## All Supported Providers
+
+| Provider | Type | Website | Documentation | API Reference |
+| :--- | :--- | :--- | :--- | :--- |
+| [Sentry](https://sentry.io/) | Backend | [sentry.io](https://sentry.io/) | [Laravel Guide](https://docs.sentry.io/platforms/php/guides/laravel/) | [API Docs](https://docs.sentry.io/api/) |
+| [Bugsnag](https://www.bugsnag.com/) | Backend | [bugsnag.com](https://www.bugsnag.com/) | [Laravel Guide](https://docs.bugsnag.com/platforms/php/laravel/) | [API Docs](https://bugsnagapiv2.docs.apiary.io/) |
+| [Flare](https://flareapp.io/) | Backend | [flareapp.io](https://flareapp.io/) | [Setup Guide](https://flareapp.io/docs/general/projects) | -- |
+| [Rollbar](https://rollbar.com/) | Both | [rollbar.com](https://rollbar.com/) | [Laravel Guide](https://docs.rollbar.com/docs/laravel) | [API Docs](https://docs.rollbar.com/reference) |
+| [Honeybadger](https://www.honeybadger.io/) | Both | [honeybadger.io](https://www.honeybadger.io/) | [Laravel Guide](https://docs.honeybadger.io/lib/php/integration/laravel/) | [API Docs](https://docs.honeybadger.io/api/) |
+| [Airbrake](https://airbrake.io/) | Backend | [airbrake.io](https://airbrake.io/) | [Laravel Guide](https://docs.airbrake.io/docs/platforms/framework/php/laravel/) | [API Docs](https://airbrake.io/docs/devops-tools/api/) |
+| [Raygun](https://raygun.com/) | Both | [raygun.com](https://raygun.com/) | [Laravel Guide](https://raygun.com/documentation/language-guides/php/crash-reporting/laravel/) | [API Docs](https://raygun.com/documentation/product-guides/crash-reporting/api/) |
+| [Laravel Exception Notifier](https://github.com/jeremykenedy/laravel-exception-notifier) | Backend | [GitHub](https://github.com/jeremykenedy/laravel-exception-notifier) | [README](https://github.com/jeremykenedy/laravel-exception-notifier#readme) | -- |
+| [New Relic](https://newrelic.com/) | Backend | [newrelic.com](https://newrelic.com/) | [PHP Agent Docs](https://docs.newrelic.com/docs/apm/agents/php-agent/) | [API Docs](https://docs.newrelic.com/docs/apis/rest-api-v2/) |
+| [Datadog](https://www.datadoghq.com/) | Both | [datadoghq.com](https://www.datadoghq.com/) | [PHP Tracing](https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/php/) | [API Docs](https://docs.datadoghq.com/api/latest/) |
+| [AppSignal](https://www.appsignal.com/) | Backend | [appsignal.com](https://www.appsignal.com/) | [PHP Docs](https://docs.appsignal.com/php/) | [API Docs](https://docs.appsignal.com/api/) |
+| [Loggly](https://www.loggly.com/) | Backend | [loggly.com](https://www.loggly.com/) | [PHP Logging](https://documentation.solarwinds.com/en/success_center/loggly/content/admin/php-logging.htm) | [API Docs](https://documentation.solarwinds.com/en/success_center/loggly/content/admin/api-overview.htm) |
+| [LogRocket](https://logrocket.com/) | Frontend | [logrocket.com](https://logrocket.com/) | [Quickstart](https://docs.logrocket.com/docs/quickstart) | [API Docs](https://docs.logrocket.com/reference/) |
+| [Instabug](https://www.instabug.com/) | Frontend | [instabug.com](https://www.instabug.com/) | [Web Integration](https://docs.instabug.com/docs/web-integration) | [API Docs](https://docs.instabug.com/reference/) |
+| [Gleap](https://gleap.io/) | Frontend | [gleap.io](https://gleap.io/) | [JavaScript SDK](https://docs.gleap.io/docs/javascript-sdk) | [API Docs](https://docs.gleap.io/reference/) |
+| [Firebase Crashlytics](https://firebase.google.com/) | Frontend | [firebase.google.com](https://firebase.google.com/) | [Crashlytics Docs](https://firebase.google.com/docs/crashlytics) | [REST API](https://firebase.google.com/docs/reference/rest/) |
+| [Memfault](https://memfault.com/) | Frontend | [memfault.com](https://memfault.com/) | [Docs](https://docs.memfault.com/) | [REST API](https://docs.memfault.com/docs/cloud/rest-api/) |
+| [Ghost Inspector](https://ghostinspector.com/) | Testing | [ghostinspector.com](https://ghostinspector.com/) | [Docs](https://ghostinspector.com/docs/) | [API Docs](https://ghostinspector.com/docs/api/) |
+| [Google Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) | Testing | [Chrome DevTools](https://developer.chrome.com/docs/lighthouse/overview/) | [GitHub](https://github.com/GoogleChrome/lighthouse) | [PageSpeed API](https://developers.google.com/speed/docs/insights/v5/get-started) |
+| [Spatie Link Checker](https://github.com/spatie/laravel-link-checker) | Testing | [GitHub](https://github.com/spatie/laravel-link-checker) | [Usage Guide](https://github.com/spatie/laravel-link-checker#usage) | -- |
+| [SSL Labs](https://www.ssllabs.com/ssltest/) | Testing | [ssllabs.com](https://www.ssllabs.com/ssltest/) | [About](https://www.ssllabs.com/ssltest/) | [API Docs](https://github.com/ssllabs/ssllabs-scan/blob/master/ssllabs-api-docs-v3.md) |
+| [Buddy.Works](https://buddy.works/) | Testing | [buddy.works](https://buddy.works/) | [Docs](https://buddy.works/docs/) | [API Docs](https://buddy.works/docs/api/getting-started/) |
+| [UptimeRobot](https://uptimerobot.com/) | Uptime | [uptimerobot.com](https://uptimerobot.com/) | [API Docs](https://uptimerobot.com/api/) | [API Docs](https://uptimerobot.com/api/) |
+| [StatusCake](https://www.statuscake.com/) | Uptime | [statuscake.com](https://www.statuscake.com/) | [Knowledge Base](https://www.statuscake.com/kb/) | [API v1](https://www.statuscake.com/api/v1/) |
 
 ## Installation
 
