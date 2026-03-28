@@ -12,14 +12,14 @@ class UptimeService
     {
         $apiKey = config('observability.uptime.uptimerobot.api_key');
 
-        if (! $apiKey) {
+        if (!$apiKey) {
             return null;
         }
 
         try {
             $response = Http::post('https://api.uptimerobot.com/v2/getMonitors', [
                 'api_key' => $apiKey,
-                'format' => 'json',
+                'format'  => 'json',
             ]);
 
             if ($response->ok()) {
@@ -36,7 +36,7 @@ class UptimeService
     {
         $apiKey = config('observability.uptime.statuscake.api_key');
 
-        if (! $apiKey) {
+        if (!$apiKey) {
             return null;
         }
 

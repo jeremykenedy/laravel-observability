@@ -22,7 +22,7 @@ class SwitchCommand extends Command
         $css = $this->option('css');
         $frontend = $this->option('frontend');
 
-        if (! $css && ! $frontend) {
+        if (!$css && !$frontend) {
             $this->error('Provide --css and/or --frontend');
 
             return self::FAILURE;

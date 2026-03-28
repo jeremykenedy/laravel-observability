@@ -10,7 +10,6 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\note;
-use function Laravel\Prompts\password;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
@@ -26,34 +25,34 @@ class InstallCommand extends Command
 
     protected array $providers = [
         'backend' => [
-            'sentry' => ['label' => 'Sentry (Error Tracking)', 'package' => 'sentry/sentry-laravel', 'keys' => ['SENTRY_LARAVEL_DSN'], 'signup' => 'https://sentry.io/signup/'],
-            'bugsnag' => ['label' => 'Bugsnag (Error Monitoring)', 'package' => 'bugsnag/bugsnag-laravel', 'keys' => ['BUGSNAG_API_KEY'], 'signup' => 'https://app.bugsnag.com/user/new'],
-            'flare' => ['label' => 'Flare/Ignition (Laravel Error Tracker)', 'package' => 'spatie/laravel-ignition', 'keys' => ['FLARE_KEY'], 'signup' => 'https://flareapp.io/'],
-            'rollbar' => ['label' => 'Rollbar (Error + Deploy Tracking)', 'package' => 'rollbar/rollbar-laravel', 'keys' => ['ROLLBAR_TOKEN'], 'signup' => 'https://rollbar.com/signup/'],
-            'honeybadger' => ['label' => 'Honeybadger (Errors + Uptime + Cron)', 'package' => 'honeybadger-io/honeybadger-laravel', 'keys' => ['HONEYBADGER_API_KEY'], 'signup' => 'https://www.honeybadger.io/'],
-            'airbrake' => ['label' => 'Airbrake (Error + Performance)', 'package' => 'airbrake/phpbrake', 'keys' => ['AIRBRAKE_PROJECT_ID', 'AIRBRAKE_PROJECT_KEY'], 'signup' => 'https://airbrake.io/'],
-            'raygun' => ['label' => 'Raygun (Crash Reporting + RUM)', 'package' => 'mindscape/raygun4php', 'keys' => ['RAYGUN_API_KEY'], 'signup' => 'https://raygun.com/'],
+            'sentry'             => ['label' => 'Sentry (Error Tracking)', 'package' => 'sentry/sentry-laravel', 'keys' => ['SENTRY_LARAVEL_DSN'], 'signup' => 'https://sentry.io/signup/'],
+            'bugsnag'            => ['label' => 'Bugsnag (Error Monitoring)', 'package' => 'bugsnag/bugsnag-laravel', 'keys' => ['BUGSNAG_API_KEY'], 'signup' => 'https://app.bugsnag.com/user/new'],
+            'flare'              => ['label' => 'Flare/Ignition (Laravel Error Tracker)', 'package' => 'spatie/laravel-ignition', 'keys' => ['FLARE_KEY'], 'signup' => 'https://flareapp.io/'],
+            'rollbar'            => ['label' => 'Rollbar (Error + Deploy Tracking)', 'package' => 'rollbar/rollbar-laravel', 'keys' => ['ROLLBAR_TOKEN'], 'signup' => 'https://rollbar.com/signup/'],
+            'honeybadger'        => ['label' => 'Honeybadger (Errors + Uptime + Cron)', 'package' => 'honeybadger-io/honeybadger-laravel', 'keys' => ['HONEYBADGER_API_KEY'], 'signup' => 'https://www.honeybadger.io/'],
+            'airbrake'           => ['label' => 'Airbrake (Error + Performance)', 'package' => 'airbrake/phpbrake', 'keys' => ['AIRBRAKE_PROJECT_ID', 'AIRBRAKE_PROJECT_KEY'], 'signup' => 'https://airbrake.io/'],
+            'raygun'             => ['label' => 'Raygun (Crash Reporting + RUM)', 'package' => 'mindscape/raygun4php', 'keys' => ['RAYGUN_API_KEY'], 'signup' => 'https://raygun.com/'],
             'exception_notifier' => ['label' => 'Laravel Exception Notifier (Email Alerts)', 'package' => 'jeremykenedy/laravel-exception-notifier', 'keys' => [], 'signup' => 'https://github.com/jeremykenedy/laravel-exception-notifier'],
         ],
         'apm' => [
             'new_relic' => ['label' => 'New Relic (Full APM)', 'package' => null, 'keys' => ['NEW_RELIC_LICENSE_KEY', 'NEW_RELIC_APP_NAME'], 'signup' => 'https://newrelic.com/signup', 'note' => 'Requires the New Relic PHP agent installed on your server.'],
-            'datadog' => ['label' => 'Datadog (Infrastructure + APM)', 'package' => null, 'keys' => ['DATADOG_API_KEY'], 'signup' => 'https://www.datadoghq.com/', 'note' => 'Requires the Datadog dd-trace PHP extension.'],
+            'datadog'   => ['label' => 'Datadog (Infrastructure + APM)', 'package' => null, 'keys' => ['DATADOG_API_KEY'], 'signup' => 'https://www.datadoghq.com/', 'note' => 'Requires the Datadog dd-trace PHP extension.'],
             'appsignal' => ['label' => 'AppSignal (Performance Monitoring)', 'package' => 'appsignal/appsignal-laravel', 'keys' => ['APPSIGNAL_PUSH_API_KEY'], 'signup' => 'https://www.appsignal.com/'],
-            'loggly' => ['label' => 'Loggly (Cloud Log Management)', 'package' => null, 'keys' => ['LOGGLY_TOKEN'], 'signup' => 'https://www.loggly.com/', 'note' => 'Add a custom Monolog handler in config/logging.php.'],
+            'loggly'    => ['label' => 'Loggly (Cloud Log Management)', 'package' => null, 'keys' => ['LOGGLY_TOKEN'], 'signup' => 'https://www.loggly.com/', 'note' => 'Add a custom Monolog handler in config/logging.php.'],
         ],
         'frontend' => [
             'logrocket' => ['label' => 'LogRocket (Session Replay)', 'npm' => 'logrocket', 'keys' => ['LOGROCKET_APP_ID'], 'signup' => 'https://logrocket.com/', 'blade' => "Add @observabilityScripts to your layout <head> or manually:\nimport LogRocket from 'logrocket';\nLogRocket.init('YOUR_APP_ID');"],
-            'instabug' => ['label' => 'Instabug (Bug Reporting)', 'npm' => null, 'keys' => ['INSTABUG_TOKEN'], 'signup' => 'https://www.instabug.com/', 'blade' => 'Add @observabilityScripts to your layout <head>. The Instabug SDK loads via CDN.'],
-            'gleap' => ['label' => 'Gleap (Visual Bug Reports + Feedback)', 'npm' => 'gleap', 'keys' => ['GLEAP_API_KEY'], 'signup' => 'https://gleap.io/', 'blade' => "Add @observabilityScripts to your layout <head> or manually:\nimport Gleap from 'gleap';\nGleap.initialize('YOUR_API_KEY');"],
+            'instabug'  => ['label' => 'Instabug (Bug Reporting)', 'npm' => null, 'keys' => ['INSTABUG_TOKEN'], 'signup' => 'https://www.instabug.com/', 'blade' => 'Add @observabilityScripts to your layout <head>. The Instabug SDK loads via CDN.'],
+            'gleap'     => ['label' => 'Gleap (Visual Bug Reports + Feedback)', 'npm' => 'gleap', 'keys' => ['GLEAP_API_KEY'], 'signup' => 'https://gleap.io/', 'blade' => "Add @observabilityScripts to your layout <head> or manually:\nimport Gleap from 'gleap';\nGleap.initialize('YOUR_API_KEY');"],
         ],
         'testing' => [
             'ghost_inspector' => ['label' => 'Ghost Inspector (Browser Testing)', 'package' => null, 'keys' => ['GHOST_INSPECTOR_API_KEY'], 'signup' => 'https://ghostinspector.com/'],
-            'lighthouse' => ['label' => 'Google Lighthouse (Performance Auditing)', 'package' => null, 'keys' => [], 'signup' => 'https://developer.chrome.com/docs/lighthouse/overview/', 'note' => "Run: npx lighthouse https://your-app.com --output json --chrome-flags=\"--headless\""],
-            'link_checker' => ['label' => 'Spatie Link Checker (Broken Links)', 'package' => 'spatie/laravel-link-checker', 'keys' => [], 'signup' => 'https://github.com/spatie/laravel-link-checker'],
+            'lighthouse'      => ['label' => 'Google Lighthouse (Performance Auditing)', 'package' => null, 'keys' => [], 'signup' => 'https://developer.chrome.com/docs/lighthouse/overview/', 'note' => 'Run: npx lighthouse https://your-app.com --output json --chrome-flags="--headless"'],
+            'link_checker'    => ['label' => 'Spatie Link Checker (Broken Links)', 'package' => 'spatie/laravel-link-checker', 'keys' => [], 'signup' => 'https://github.com/spatie/laravel-link-checker'],
         ],
         'uptime' => [
             'uptimerobot' => ['label' => 'UptimeRobot (Uptime Monitoring)', 'package' => null, 'keys' => ['UPTIMEROBOT_API_KEY'], 'signup' => 'https://uptimerobot.com/'],
-            'statuscake' => ['label' => 'StatusCake (Website Monitoring)', 'package' => null, 'keys' => ['STATUSCAKE_API_KEY'], 'signup' => 'https://www.statuscake.com/'],
+            'statuscake'  => ['label' => 'StatusCake (Website Monitoring)', 'package' => null, 'keys' => ['STATUSCAKE_API_KEY'], 'signup' => 'https://www.statuscake.com/'],
         ],
     ];
 
@@ -69,7 +68,7 @@ class InstallCommand extends Command
         // Check .env
         $envPath = base_path('.env');
         $envExists = file_exists($envPath);
-        if (! $envExists) {
+        if (!$envExists) {
             warning('No .env file found. Credentials will be displayed but not saved automatically.');
         }
 
@@ -132,7 +131,7 @@ class InstallCommand extends Command
 
         table(['Provider', 'Type', 'Package'], $tableRows);
 
-        if (! confirm('Install these providers?', true)) {
+        if (!confirm('Install these providers?', true)) {
             warning('Installation cancelled.');
 
             return self::FAILURE;
@@ -145,16 +144,16 @@ class InstallCommand extends Command
         $composerPackages = [];
         foreach ($allSelected as $name) {
             $provider = $this->findProvider($name);
-            if (! empty($provider['package'])) {
+            if (!empty($provider['package'])) {
                 $composerPackages[] = $provider['package'];
             }
         }
 
-        if (! empty($composerPackages)) {
+        if (!empty($composerPackages)) {
             $pkgList = implode(' ', $composerPackages);
             info("Installing composer packages: {$pkgList}");
             spin(
-                fn () => exec("cd ".base_path()." && composer require {$pkgList} 2>&1", $output, $code),
+                fn () => exec('cd '.base_path()." && composer require {$pkgList} 2>&1", $output, $code),
                 'Installing composer packages...',
             );
         }
@@ -163,16 +162,16 @@ class InstallCommand extends Command
         $npmPackages = [];
         foreach ($allSelected as $name) {
             $provider = $this->findProvider($name);
-            if (! empty($provider['npm'])) {
+            if (!empty($provider['npm'])) {
                 $npmPackages[] = $provider['npm'];
             }
         }
 
-        if (! empty($npmPackages)) {
+        if (!empty($npmPackages)) {
             $npmList = implode(' ', $npmPackages);
             info("Installing npm packages: {$npmList}");
             spin(
-                fn () => exec("cd ".base_path()." && npm install {$npmList} 2>&1", $output, $code),
+                fn () => exec('cd '.base_path()." && npm install {$npmList} 2>&1", $output, $code),
                 'Installing npm packages...',
             );
         }
@@ -207,7 +206,7 @@ class InstallCommand extends Command
         }
 
         // Write to .env
-        if (! empty($envValues) && $envExists) {
+        if (!empty($envValues) && $envExists) {
             spin(function () use ($envPath, $envValues) {
                 $content = file_get_contents($envPath);
                 foreach ($envValues as $key => $value) {
@@ -219,7 +218,7 @@ class InstallCommand extends Command
                 }
                 file_put_contents($envPath, $content);
             }, 'Saving credentials to .env...');
-        } elseif (! $envExists && ! empty($envValues)) {
+        } elseif (!$envExists && !empty($envValues)) {
             warning('Could not write to .env (file does not exist). Add these manually:');
             foreach ($envValues as $key => $value) {
                 $this->line("  {$key}={$value}");
@@ -237,7 +236,7 @@ class InstallCommand extends Command
         $this->newLine();
 
         // Frontend instructions
-        $hasFrontend = ! empty(array_intersect($allSelected, array_keys($this->providers['frontend'])));
+        $hasFrontend = !empty(array_intersect($allSelected, array_keys($this->providers['frontend'])));
         if ($hasFrontend) {
             note(<<<'NOTE'
             FRONTEND SETUP REQUIRED
@@ -258,20 +257,20 @@ class InstallCommand extends Command
             $provider = $this->findProvider($name);
             $this->line("  <fg=cyan;options=bold>{$provider['label']}</>");
 
-            if (! empty($provider['signup'])) {
+            if (!empty($provider['signup'])) {
                 $this->line("    Get credentials: <href={$provider['signup']}>{$provider['signup']}</>");
             }
 
-            if (! empty($provider['note'])) {
+            if (!empty($provider['note'])) {
                 $this->line("    Note: {$provider['note']}");
             }
 
-            if (! empty($provider['blade'])) {
+            if (!empty($provider['blade'])) {
                 $this->line("    Frontend: {$provider['blade']}");
             }
 
-            if (! empty($provider['package'])) {
-                $this->line("    <fg=green>Composer package installed automatically.</>");
+            if (!empty($provider['package'])) {
+                $this->line('    <fg=green>Composer package installed automatically.</>');
             }
 
             $this->newLine();

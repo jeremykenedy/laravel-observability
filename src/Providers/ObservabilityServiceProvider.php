@@ -22,7 +22,7 @@ class ObservabilityServiceProvider extends ServiceProvider
         // Load CSS-framework-specific views
         $css = config('ui-kit.css_framework', 'tailwind');
         $viewPath = __DIR__.'/../../resources/views/'.$css.'/blade';
-        if (! is_dir($viewPath)) {
+        if (!is_dir($viewPath)) {
             $viewPath = __DIR__.'/../../resources/views/tailwind/blade';
         }
         $this->loadViewsFrom([$viewPath, __DIR__.'/../../resources/views/'], 'observability');
@@ -44,7 +44,7 @@ class ObservabilityServiceProvider extends ServiceProvider
             ], 'observability-views');
 
             $frontend = config('ui-kit.frontend', 'blade');
-            if (! in_array($frontend, ['blade', 'livewire'])) {
+            if (!in_array($frontend, ['blade', 'livewire'])) {
                 $jsPath = __DIR__.'/../../resources/js/'.$frontend.'/pages';
                 if (is_dir($jsPath)) {
                     $this->publishes([

@@ -26,11 +26,11 @@ class HealthController extends Controller
 
         return response()->json([
             'detected' => $detector->getDetected(),
-            'active' => $detector->getActiveProviders(),
-            'backend' => $detector->getProvidersByType('backend'),
+            'active'   => $detector->getActiveProviders(),
+            'backend'  => $detector->getProvidersByType('backend'),
             'frontend' => $detector->getProvidersByType('frontend'),
-            'testing' => $detector->getProvidersByType('testing'),
-            'uptime' => array_keys($detector->getUptimeProviders()),
+            'testing'  => $detector->getProvidersByType('testing'),
+            'uptime'   => array_keys($detector->getUptimeProviders()),
         ]);
     }
 
