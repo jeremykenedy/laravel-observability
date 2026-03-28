@@ -4,6 +4,7 @@ A comprehensive observability package for Laravel with auto-detection of 20+ mon
 
 [![Total Downloads](https://poser.pugx.org/jeremykenedy/laravel-observability/d/total.svg)](https://packagist.org/packages/jeremykenedy/laravel-observability)
 [![Latest Stable Version](https://poser.pugx.org/jeremykenedy/laravel-observability/v/stable.svg)](https://packagist.org/packages/jeremykenedy/laravel-observability)
+[![StyleCI](https://github.styleci.io/repos/1194847006/shield?branch=main)](https://github.styleci.io/repos/1194847006?branch=main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 #### Table of Contents
