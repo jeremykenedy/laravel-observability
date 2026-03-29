@@ -43,7 +43,7 @@ A comprehensive observability package for Laravel with auto-detection of 20+ mon
 | Provider | Type | Website | Documentation | API Reference |
 | :--- | :--- | :--- | :--- | :--- |
 | [Sentry](https://sentry.io/) | Backend | [sentry.io](https://sentry.io/) | [Laravel Guide](https://docs.sentry.io/platforms/php/guides/laravel/) | [API Docs](https://docs.sentry.io/api/) |
-| [Bugsnag](https://www.bugsnag.com/) | Backend | [bugsnag.com](https://www.bugsnag.com/) | [Laravel Guide](https://docs.bugsnag.com/platforms/php/laravel/) | [API Docs](https://bugsnagapiv2.docs.apiary.io/) |
+| [Bugsnag](https://www.bugsnag.com/) | Backend | [bugsnag.com](https://www.bugsnag.com/) | [Laravel Guide](https://docs.bugsnag.com/platforms/php/laravel/) | [API Docs](https://docs.bugsnag.com/) |
 | [Flare](https://flareapp.io/) | Backend | [flareapp.io](https://flareapp.io/) | [Setup Guide](https://flareapp.io/docs/general/projects) | -- |
 | [Rollbar](https://rollbar.com/) | Both | [rollbar.com](https://rollbar.com/) | [Laravel Guide](https://docs.rollbar.com/docs/laravel) | [API Docs](https://docs.rollbar.com/reference) |
 | [Honeybadger](https://www.honeybadger.io/) | Both | [honeybadger.io](https://www.honeybadger.io/) | [Laravel Guide](https://docs.honeybadger.io/lib/php/integration/laravel/) | [API Docs](https://docs.honeybadger.io/api/) |
