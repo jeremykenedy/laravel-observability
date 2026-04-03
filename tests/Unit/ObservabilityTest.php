@@ -53,14 +53,14 @@ it('config has uptime providers', function () {
 
 it('each provider config has type field', function () {
     foreach (config('observability.providers') as $name => $cfg) {
-        expect($cfg)->toHaveKey('type', "Provider {$name} missing type");
+        expect($cfg)->toHaveKey('type');
         expect($cfg['type'])->toBeIn(['backend', 'frontend', 'both', 'testing']);
     }
 });
 
 it('each provider config has docs field', function () {
     foreach (config('observability.providers') as $name => $cfg) {
-        expect($cfg)->toHaveKey('docs', "Provider {$name} missing docs");
+        expect($cfg)->toHaveKey('docs');
     }
 });
 

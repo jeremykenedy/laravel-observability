@@ -109,6 +109,16 @@ class InstallCommand extends Command
             warning('No .env file found. Credentials will be displayed but not saved automatically.');
         }
 
+        // In non-interactive mode, skip provider selection
+        if ($this->option('no-interaction')) {
+            $this->call('vendor:publish', ['--tag' => 'observability-config', '--force' => true]);
+            $this->setCssFramework($frameworkResult['css']);
+            $this->setFrontendFramework($frameworkResult['frontend']);
+            $this->showSummary('Laravel Observability', $frameworkResult['css'], $frameworkResult['frontend']);
+
+            return self::SUCCESS;
+        }
+
         // Step 1: Select backend providers
         info('Step 1/5: Backend Error Tracking & Monitoring');
         $backendChoices = multiselect(

@@ -146,8 +146,9 @@ it('observabilityScripts blade directive exists', function () {
 
 it('observability install command runs successfully with force', function () {
     $this->artisan('observability:install', [
-        '--css'      => 'tailwind',
-        '--frontend' => 'blade',
-        '--force'    => true,
+        '--css'            => 'tailwind',
+        '--frontend'       => 'blade',
+        '--force'          => true,
+        '--no-interaction' => true,
     ])->assertSuccessful();
 });
