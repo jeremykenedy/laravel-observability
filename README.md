@@ -22,9 +22,9 @@ A comprehensive observability package for Laravel with auto-detection of 25+ mon
 - [Features](#features)
 - [Framework Support](#framework-support)
 - [Requirements](#requirements)
-- [All Supported Providers](#all-supported-providers)
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [All Supported Providers](#all-supported-providers)
 - [Backend Providers](#backend-providers)
 - [APM and Performance](#apm-and-performance)
 - [Frontend Monitoring](#frontend-monitoring)
@@ -60,9 +60,9 @@ A comprehensive observability package for Laravel with auto-detection of 25+ mon
 
 | | Blade | Livewire | Vue 3 | React 18 | Svelte 4 |
 |---|:---:|:---:|:---:|:---:|:---:|
-| **Tailwind v4** | Y | Y | Y | Y | Y |
-| **Bootstrap 5** | Y | Y | Y | Y | Y |
-| **Bootstrap 4** | Y | Y | Y | Y | Y |
+| **Tailwind v4** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| **Bootstrap 5** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| **Bootstrap 4** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 ## Requirements
 
@@ -70,6 +70,27 @@ A comprehensive observability package for Laravel with auto-detection of 25+ mon
 - Laravel 12 or 13
 - A CSS framework: Tailwind CSS v4, Bootstrap 5, or Bootstrap 4
 - A frontend: Blade, Livewire 3, Vue 3, React 18, or Svelte 4
+
+## Installation
+
+```bash
+composer require jeremykenedy/laravel-observability
+php artisan observability:install
+```
+
+The installer will:
+1. Walk through CSS and frontend framework selection with back navigation
+2. Guide you through provider selection (backend, APM, frontend, testing/uptime)
+3. Install required composer and npm packages
+4. Collect API credentials and save them to `.env`
+
+If the package is already installed, the installer will suggest using `observability:update` instead. To force a fresh reinstall, type `confirm` when prompted or use `--force`.
+
+## Configuration
+
+```bash
+php artisan vendor:publish --tag=observability-config
+```
 
 ## All Supported Providers
 
@@ -99,28 +120,6 @@ A comprehensive observability package for Laravel with auto-detection of 25+ mon
 | [Buddy.Works](https://buddy.works/) | Testing | [buddy.works](https://buddy.works/) | [Docs](https://buddy.works/docs/) | [API Docs](https://buddy.works/docs/api/getting-started/) |
 | [UptimeRobot](https://uptimerobot.com/) | Uptime | [uptimerobot.com](https://uptimerobot.com/) | [API Docs](https://uptimerobot.com/api/) | [API Docs](https://uptimerobot.com/api/) |
 | [StatusCake](https://www.statuscake.com/) | Uptime | [statuscake.com](https://www.statuscake.com/) | [Knowledge Base](https://www.statuscake.com/kb/) | [API v1](https://www.statuscake.com/api/v1/) |
-
-## Installation
-
-```bash
-composer require jeremykenedy/laravel-observability
-php artisan observability:install
-```
-
-The installer will:
-1. Display an ASCII art banner
-2. Walk through CSS and frontend framework selection with back navigation
-3. Guide you through provider selection (backend, APM, frontend, testing/uptime)
-4. Install required composer and npm packages
-5. Collect API credentials and save them to `.env`
-
-If the package is already installed, the installer will suggest using `observability:update` instead. To force a fresh reinstall, type `confirm` when prompted or use `--force`.
-
-## Configuration
-
-```bash
-php artisan vendor:publish --tag=observability-config
-```
 
 ## Backend Providers
 
