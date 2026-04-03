@@ -1,0 +1,80 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.2, 8.3, 8.4]
+        laravel: ['12.*', '13.*']
+        exclude:
+          - php: 8.2
+            laravel: '13.*'
+        include:
+          - laravel: '12.*'
+            testbench: '10.*'
+          - laravel: '13.*'
+            testbench: '11.*'
+
+    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction
+
+      - name: Run tests
+        run: ./vendor/bin/pest --ci
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Pint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction
+
+      - name: Run Pint
+        run: ./vendor/bin/pint --test
+
+  js-check:
+    runs-on: ubuntu-latest
+    name: Frontend Components
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Vue component exists
+        run: test -f resources/js/vue/pages/HealthDashboard.vue
+
+      - name: Check React component exists
+        run: test -f resources/js/react/pages/HealthDashboard.jsx
+
+      - name: Check Svelte component exists
+        run: test -f resources/js/svelte/pages/HealthDashboard.svelte

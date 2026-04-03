@@ -1,14 +1,27 @@
-# Laravel Observability
+<p align="center">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="art/banner-dark.svg">
+        <source media="(prefers-color-scheme: light)" srcset="art/banner-light.svg">
+        <img src="art/banner-light.svg" alt="Laravel Observability" width="800">
+    </picture>
+</p>
 
-A comprehensive observability package for Laravel with auto-detection of 20+ monitoring services, health checks, uptime monitoring, and frontend/backend error tracking integration.
+<p align="center">
+A comprehensive observability package for Laravel with auto-detection of 25+ monitoring services, health checks, uptime monitoring, and frontend/backend error tracking integration.
+</p>
 
-[![Total Downloads](https://poser.pugx.org/jeremykenedy/laravel-observability/d/total.svg)](https://packagist.org/packages/jeremykenedy/laravel-observability)
-[![Latest Stable Version](https://poser.pugx.org/jeremykenedy/laravel-observability/v/stable.svg)](https://packagist.org/packages/jeremykenedy/laravel-observability)
-[![StyleCI](https://github.styleci.io/repos/1194847006/shield?branch=main)](https://github.styleci.io/repos/1194847006?branch=main)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+    <a href="https://packagist.org/packages/jeremykenedy/laravel-observability"><img src="https://poser.pugx.org/jeremykenedy/laravel-observability/d/total.svg" alt="Total Downloads"></a>
+    <a href="https://packagist.org/packages/jeremykenedy/laravel-observability"><img src="https://poser.pugx.org/jeremykenedy/laravel-observability/v/stable.svg" alt="Latest Stable Version"></a>
+    <a href="https://github.com/jeremykenedy/laravel-observability/actions/workflows/tests.yml"><img src="https://github.com/jeremykenedy/laravel-observability/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+    <a href="https://github.styleci.io/repos/1194847006?branch=main"><img src="https://github.styleci.io/repos/1194847006/shield?branch=main" alt="StyleCI"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
 
 #### Table of Contents
 - [Features](#features)
+- [Framework Support](#framework-support)
+- [Requirements](#requirements)
 - [All Supported Providers](#all-supported-providers)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -24,19 +37,39 @@ A comprehensive observability package for Laravel with auto-detection of 20+ mon
   - [Uptime API](#uptime-api)
 - [Adding a Backend Provider](#adding-a-backend-provider)
 - [Adding a Frontend Provider](#adding-a-frontend-provider)
+- [Changing Frameworks](#changing-frameworks)
+- [Artisan Commands](#artisan-commands)
+- [Testing](#testing)
 - [License](#license)
 
 ## Features
 | Feature |
 | :--- |
-| Auto-detection of 20+ monitoring providers |
+| Auto-detection of 25+ monitoring providers |
 | Health check endpoint with DB, cache, storage, queue checks |
 | Backend providers auto-load when composer package installed |
 | Frontend providers output JS via @observabilityScripts directive |
 | UptimeRobot and StatusCake API integration |
 | Per-provider enable/disable via .env |
 | Provider type classification (backend, frontend, both, testing) |
+| Interactive installer with ASCII art and stepped prompts |
+| 3 CSS frameworks x 5 frontend frameworks = 15 rendering modes |
 | Publishable config via artisan |
+
+## Framework Support
+
+| | Blade | Livewire | Vue 3 | React 18 | Svelte 4 |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Tailwind v4** | Y | Y | Y | Y | Y |
+| **Bootstrap 5** | Y | Y | Y | Y | Y |
+| **Bootstrap 4** | Y | Y | Y | Y | Y |
+
+## Requirements
+
+- PHP 8.2+
+- Laravel 12 or 13
+- A CSS framework: Tailwind CSS v4, Bootstrap 5, or Bootstrap 4
+- A frontend: Blade, Livewire 3, Vue 3, React 18, or Svelte 4
 
 ## All Supported Providers
 
@@ -73,6 +106,15 @@ A comprehensive observability package for Laravel with auto-detection of 20+ mon
 composer require jeremykenedy/laravel-observability
 php artisan observability:install
 ```
+
+The installer will:
+1. Display an ASCII art banner
+2. Walk through CSS and frontend framework selection with back navigation
+3. Guide you through provider selection (backend, APM, frontend, testing/uptime)
+4. Install required composer and npm packages
+5. Collect API credentials and save them to `.env`
+
+If the package is already installed, the installer will suggest using `observability:update` instead. To force a fresh reinstall, type `confirm` when prompted or use `--force`.
 
 ## Configuration
 
@@ -278,6 +320,77 @@ $uptime->getStatusCakeStatus();
 1. Set PROVIDER_ENABLED=true in .env
 2. Add @observabilityScripts to layout head
 3. Or install npm package and init manually
+
+## Changing Frameworks
+
+After installation, use **update** or **switch** to change frameworks without losing configuration.
+
+### Update (Interactive)
+
+The update command walks through framework selection with an interactive menu:
+
+```bash
+php artisan observability:update
+```
+
+Or pass options directly:
+
+```bash
+php artisan observability:update --css=bootstrap5 --frontend=vue
+```
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `--css` | `tailwind`, `bootstrap5`, `bootstrap4` | Change CSS framework |
+| `--frontend` | `blade`, `livewire`, `vue`, `react`, `svelte` | Change frontend framework |
+
+The update command also provides provider management: re-publish config, update credentials, enable/disable providers, and view detailed status.
+
+### Switch (Quick)
+
+```bash
+php artisan observability:switch --css=bootstrap5
+php artisan observability:switch --frontend=livewire
+php artisan observability:switch --css=tailwind --frontend=vue
+```
+
+After switching, run `npm run build`.
+
+## Artisan Commands
+
+| Command | Description |
+|---------|-------------|
+| `observability:install` | Fresh install with interactive prompts. Detects existing installation. |
+| `observability:update` | Update framework selection and manage providers interactively. Does not overwrite config. |
+| `observability:switch` | Quick framework switch via flags. |
+
+### Install Options
+
+| Flag | Description |
+|------|-------------|
+| `--css=` | CSS framework: `tailwind`, `bootstrap5`, `bootstrap4` |
+| `--frontend=` | Frontend: `blade`, `livewire`, `vue`, `react`, `svelte` |
+| `--force` | Skip reinstall confirmation when already installed |
+
+### Update Options
+
+| Flag | Description |
+|------|-------------|
+| `--css=` | CSS framework: `tailwind`, `bootstrap5`, `bootstrap4` |
+| `--frontend=` | Frontend: `blade`, `livewire`, `vue`, `react`, `svelte` |
+
+### Switch Options
+
+| Flag | Description |
+|------|-------------|
+| `--css=` | CSS framework: `tailwind`, `bootstrap5`, `bootstrap4` |
+| `--frontend=` | Frontend: `blade`, `livewire`, `vue`, `react`, `svelte` |
+
+## Testing
+
+```bash
+./vendor/bin/pest
+```
 
 ## License
 

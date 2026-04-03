@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Jeremykenedy\LaravelObservability\Console;
 
 use Illuminate\Console\Command;
+use Jeremykenedy\LaravelObservability\Console\Concerns\HandlesFrameworkSetup;
+use Jeremykenedy\LaravelObservability\Console\Concerns\HasInstallPrompts;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
@@ -17,11 +19,15 @@ use function Laravel\Prompts\warning;
 
 class InstallCommand extends Command
 {
-    protected $signature = 'observability:install
-        {--css=tailwind : CSS framework (tailwind, bootstrap5, bootstrap4)}
-        {--frontend=blade : Frontend framework (blade, livewire, vue, react, svelte)}';
+    use HandlesFrameworkSetup;
+    use HasInstallPrompts;
 
-    protected $description = 'Interactively install and configure observability providers for your Laravel app';
+    protected $signature = 'observability:install
+        {--css= : CSS framework (tailwind, bootstrap5, bootstrap4)}
+        {--frontend= : Frontend framework (blade, livewire, vue, react, svelte)}
+        {--force : Skip confirmation when reinstalling}';
+
+    protected $description = 'Install and configure the Laravel Observability package';
 
     protected array $providers = [
         'backend' => [
@@ -58,12 +64,43 @@ class InstallCommand extends Command
 
     public function handle(): int
     {
-        $this->newLine();
-        info('  ╔══════════════════════════════════════════════╗');
-        info('  ║       Laravel Observability Installer        ║');
-        info('  ║   Add monitoring to your app in minutes.     ║');
-        info('  ╚══════════════════════════════════════════════╝');
-        $this->newLine();
+        $this->renderBanner('OBSERVE');
+
+        if ($this->isAlreadyInstalled() && !$this->option('force')) {
+            $this->warn('  Laravel Observability is already installed.');
+            $this->newLine();
+            $this->line('  To change frameworks or update providers, use the update command:');
+            $this->line('    <comment>php artisan observability:update</comment>');
+            $this->newLine();
+            $this->line('  To switch a single setting quickly:');
+            $this->line('    <comment>php artisan observability:switch --css=bootstrap5</comment>');
+            $this->newLine();
+            $this->warn('  Reinstalling will overwrite your config and published views.');
+            $this->warn('  This is a destructive action that resets all package settings.');
+            $this->newLine();
+
+            if ($this->option('no-interaction')) {
+                $this->error('  Already installed. Use --force to reinstall non-interactively.');
+
+                return self::FAILURE;
+            }
+
+            $confirm = $this->ask('  Type "confirm" to reinstall from scratch, or press any other key to cancel');
+
+            if ($confirm !== 'confirm') {
+                $this->info('  Cancelled. No changes were made.');
+
+                return self::SUCCESS;
+            }
+
+            $this->newLine();
+        }
+
+        // Framework selection
+        $frameworkResult = $this->promptFrameworks();
+        if ($frameworkResult === false) {
+            return self::FAILURE;
+        }
 
         // Check .env
         $envPath = base_path('.env');
@@ -111,7 +148,9 @@ class InstallCommand extends Command
         if (empty($allSelected)) {
             warning('No providers selected. Publishing config only.');
             $this->call('vendor:publish', ['--tag' => 'observability-config', '--force' => true]);
-            info('Config published. Run observability:install again to add providers.');
+            $this->setCssFramework($frameworkResult['css']);
+            $this->setFrontendFramework($frameworkResult['frontend']);
+            $this->showSummary('Laravel Observability', $frameworkResult['css'], $frameworkResult['frontend']);
 
             return self::SUCCESS;
         }
@@ -225,15 +264,12 @@ class InstallCommand extends Command
             }
         }
 
+        // Set frameworks
+        $this->setCssFramework($frameworkResult['css']);
+        $this->setFrontendFramework($frameworkResult['frontend']);
+
         // Clear config cache
         $this->callSilent('config:clear');
-
-        // Results
-        $this->newLine();
-        info('  ╔══════════════════════════════════════════════╗');
-        info('  ║         Installation Complete!               ║');
-        info('  ╚══════════════════════════════════════════════╝');
-        $this->newLine();
 
         // Frontend instructions
         $hasFrontend = !empty(array_intersect($allSelected, array_keys($this->providers['frontend'])));
@@ -276,11 +312,17 @@ class InstallCommand extends Command
             $this->newLine();
         }
 
-        info('Run `php artisan config:clear` if you update .env values.');
+        $this->showSummary('Laravel Observability', $frameworkResult['css'], $frameworkResult['frontend']);
+
         info('Health check: GET /health');
         info('Active providers: GET /health/providers');
 
         return self::SUCCESS;
+    }
+
+    protected function isAlreadyInstalled(): bool
+    {
+        return file_exists(config_path('observability.php'));
     }
 
     protected function findProvider(string $name): array

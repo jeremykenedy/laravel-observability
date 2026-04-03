@@ -9,6 +9,11 @@ use Illuminate\Support\ServiceProvider;
 use Jeremykenedy\LaravelObservability\Health\HealthChecker;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
 use Jeremykenedy\LaravelObservability\Services\UptimeService;
+use Jeremykenedy\LaravelObservability\Console\InstallCommand;
+use Jeremykenedy\LaravelObservability\Console\SwitchCommand;
+use Jeremykenedy\LaravelObservability\Console\UpdateCommand;
+use Jeremykenedy\LaravelObservability\Livewire\HealthDashboard;
+use Livewire\Livewire;
 
 class ObservabilityServiceProvider extends ServiceProvider
 {
@@ -32,9 +37,9 @@ class ObservabilityServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                \Jeremykenedy\LaravelObservability\Console\InstallCommand::class,
-                \Jeremykenedy\LaravelObservability\Console\UpdateCommand::class,
-                \Jeremykenedy\LaravelObservability\Console\SwitchCommand::class,
+                InstallCommand::class,
+                UpdateCommand::class,
+                SwitchCommand::class,
             ]);
             $this->publishes([
                 __DIR__.'/../../config/observability.php' => config_path('observability.php'),
@@ -58,8 +63,8 @@ class ObservabilityServiceProvider extends ServiceProvider
             $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
         }
 
-        if (class_exists(\Livewire\Livewire::class)) {
-            \Livewire\Livewire::component('health-dashboard', \Jeremykenedy\LaravelObservability\Livewire\HealthDashboard::class);
+        if (class_exists(Livewire::class)) {
+            Livewire::component('health-dashboard', HealthDashboard::class);
         }
 
         $detector = $this->app->make(ProviderDetector::class);

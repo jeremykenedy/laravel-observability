@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Jeremykenedy\LaravelObservability\Console;
 
 use Illuminate\Console\Command;
+use Jeremykenedy\LaravelObservability\Console\Concerns\HandlesFrameworkSetup;
+use Jeremykenedy\LaravelObservability\Console\Concerns\HasInstallPrompts;
+use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
@@ -15,18 +18,64 @@ use function Laravel\Prompts\warning;
 
 class UpdateCommand extends Command
 {
-    protected $signature = 'observability:update';
+    use HandlesFrameworkSetup;
+    use HasInstallPrompts;
 
-    protected $description = 'Update observability configuration and credentials';
+    protected $signature = 'observability:update
+        {--css= : CSS framework (tailwind, bootstrap5, bootstrap4)}
+        {--frontend= : Frontend framework (blade, livewire, vue, react, svelte)}';
+
+    protected $description = 'Update the CSS/frontend framework and manage observability providers';
 
     public function handle(): int
     {
-        $this->newLine();
-        info('  ╔══════════════════════════════════════════════╗');
-        info('  ║       Laravel Observability Updater          ║');
-        info('  ╚══════════════════════════════════════════════╝');
-        $this->newLine();
+        $this->renderBanner('OBSERVE');
 
+        if (!$this->isInstalled()) {
+            $this->warn('  Laravel Observability is not installed yet.');
+            $this->newLine();
+            $this->line('  Run the install command first:');
+            $this->line('    <comment>php artisan observability:install</comment>');
+
+            return self::FAILURE;
+        }
+
+        $css = $this->option('css');
+        $frontend = $this->option('frontend');
+
+        // If framework flags provided, update frameworks
+        if ($css || $frontend) {
+            $validCss = ['tailwind', 'bootstrap5', 'bootstrap4'];
+            $validFrontend = ['blade', 'livewire', 'vue', 'react', 'svelte'];
+
+            if ($css && !in_array($css, $validCss)) {
+                $this->error("Invalid CSS framework: {$css}. Valid: ".implode(', ', $validCss));
+
+                return self::FAILURE;
+            }
+
+            if ($frontend && !in_array($frontend, $validFrontend)) {
+                $this->error("Invalid frontend: {$frontend}. Valid: ".implode(', ', $validFrontend));
+
+                return self::FAILURE;
+            }
+
+            if ($css) {
+                $this->setCssFramework($css);
+                info("CSS framework updated to: {$css}");
+            }
+
+            if ($frontend) {
+                $this->setFrontendFramework($frontend);
+                info("Frontend framework updated to: {$frontend}");
+            }
+
+            info('Run: php artisan view:clear && npm run build');
+
+            return self::SUCCESS;
+        }
+
+        // Interactive mode: show menu
         $envPath = base_path('.env');
         if (!file_exists($envPath)) {
             warning('No .env file found.');
@@ -35,7 +84,7 @@ class UpdateCommand extends Command
         }
 
         // Show current state
-        $detector = app(\Jeremykenedy\LaravelObservability\Services\ProviderDetector::class);
+        $detector = app(ProviderDetector::class);
         $detector->detect();
 
         $active = $detector->getActiveProviders();
@@ -46,10 +95,10 @@ class UpdateCommand extends Command
         $this->line('  Active:   '.implode(', ', $active ?: ['none']));
         $this->newLine();
 
-        // Options
         $action = \Laravel\Prompts\select(
             label: 'What would you like to do?',
             options: [
+                'frameworks'  => 'Change CSS/frontend framework',
                 'config'      => 'Re-publish config (update to latest version)',
                 'credentials' => 'Update credentials for active providers',
                 'toggle'      => 'Enable/disable a provider',
@@ -58,6 +107,7 @@ class UpdateCommand extends Command
         );
 
         match ($action) {
+            'frameworks'  => $this->updateFrameworks(),
             'config'      => $this->republishConfig(),
             'credentials' => $this->updateCredentials($envPath),
             'toggle'      => $this->toggleProvider($envPath),
@@ -65,6 +115,26 @@ class UpdateCommand extends Command
         };
 
         return self::SUCCESS;
+    }
+
+    protected function isInstalled(): bool
+    {
+        return file_exists(config_path('observability.php'));
+    }
+
+    protected function updateFrameworks(): void
+    {
+        $result = $this->promptFrameworks();
+        if ($result === false) {
+            return;
+        }
+
+        $this->setCssFramework($result['css']);
+        $this->setFrontendFramework($result['frontend']);
+
+        info("CSS framework updated to: {$result['css']}");
+        info("Frontend framework updated to: {$result['frontend']}");
+        info('Run: php artisan view:clear && npm run build');
     }
 
     protected function republishConfig(): void
@@ -91,15 +161,12 @@ class UpdateCommand extends Command
 
             info("  {$name}:");
 
-            // Find credential keys from config
             $keys = array_filter(array_keys($config), fn ($k) => in_array($k, [
                 'dsn', 'api_key', 'key', 'access_token', 'project_id', 'project_key',
                 'license_key', 'app_name', 'push_api_key', 'token', 'tag', 'app_id', 'suite_id',
             ]));
 
             foreach ($keys as $key) {
-                $envKey = strtoupper($name).'_'.strtoupper($key);
-                // Try common env key patterns
                 $envKey = match (true) {
                     str_contains($content, 'SENTRY_LARAVEL_DSN') && $name === 'sentry' => 'SENTRY_LARAVEL_DSN',
                     default                                                            => strtoupper($name).'_'.strtoupper($key),

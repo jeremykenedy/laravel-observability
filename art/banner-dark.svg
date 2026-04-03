@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+  <defs>
+    <linearGradient id="bg-dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0c0a09"/>
+      <stop offset="100%" stop-color="#1c1917"/>
+    </linearGradient>
+    <linearGradient id="pulse-green-d" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <linearGradient id="pulse-blue-d" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="pulse-amber-d" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="200" rx="16" fill="url(#bg-dark)"/>
+
+  <!-- Monitoring illustration (right side) -->
+  <g transform="translate(560, 25)">
+    <!-- Dashboard card -->
+    <rect width="190" height="140" rx="12" fill="#1a1a1a" stroke="#333" stroke-width="1"/>
+
+    <!-- Heartbeat line -->
+    <polyline points="20,80 45,80 55,50 65,110 75,60 85,90 95,80 120,80 130,45 140,95 150,65 160,80 175,80"
+              fill="none" stroke="url(#pulse-green-d)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Status dots -->
+    <circle cx="30" cy="30" r="6" fill="url(#pulse-green-d)"/>
+    <circle cx="50" cy="30" r="6" fill="url(#pulse-green-d)"/>
+    <circle cx="70" cy="30" r="6" fill="url(#pulse-blue-d)"/>
+    <circle cx="90" cy="30" r="6" fill="url(#pulse-green-d)"/>
+    <circle cx="110" cy="30" r="6" fill="url(#pulse-amber-d)"/>
+    <circle cx="130" cy="30" r="6" fill="url(#pulse-green-d)"/>
+    <circle cx="150" cy="30" r="6" fill="url(#pulse-green-d)"/>
+
+    <!-- Mini bar chart -->
+    <rect x="25" y="105" width="12" height="20" rx="2" fill="#1e3a5f" opacity=".8"/>
+    <rect x="45" y="98" width="12" height="27" rx="2" fill="#1e40af" opacity=".6"/>
+    <rect x="65" y="92" width="12" height="33" rx="2" fill="#3b82f6" opacity=".5"/>
+    <rect x="85" y="100" width="12" height="25" rx="2" fill="#1e40af" opacity=".6"/>
+    <rect x="105" y="88" width="12" height="37" rx="2" fill="#60a5fa" opacity=".5"/>
+    <rect x="125" y="95" width="12" height="30" rx="2" fill="#3b82f6" opacity=".5"/>
+    <rect x="145" y="102" width="12" height="23" rx="2" fill="#1e40af" opacity=".6"/>
+
+    <!-- Alert bell icon -->
+    <g transform="translate(165, 15)">
+      <circle cx="8" cy="4" r="4" fill="url(#pulse-amber-d)" opacity=".3"/>
+      <circle cx="8" cy="4" r="2" fill="url(#pulse-amber-d)"/>
+    </g>
+  </g>
+
+  <!-- Title -->
+  <text x="60" y="82" fill="#fff" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="40" font-weight="700" letter-spacing="-.5">Laravel Observability</text>
+
+  <!-- Tagline -->
+  <text x="60" y="108" fill="#a8a29e" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14">Auto-detect 25+ monitoring providers with health checks and uptime tracking</text>
+
+  <!-- Feature pills -->
+  <g transform="translate(60, 128)" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="10" font-weight="500">
+    <!-- 25+ Providers -->
+    <rect width="82" height="22" rx="11" fill="#1a1a1a" opacity=".8" stroke="#a78bfa" stroke-width=".8"/>
+    <text x="41" y="15" fill="#a78bfa" text-anchor="middle">25+ Providers</text>
+
+    <!-- Health Checks -->
+    <rect x="90" width="82" height="22" rx="11" fill="#1a1a1a" opacity=".8" stroke="#60a5fa" stroke-width=".8"/>
+    <text x="131" y="15" fill="#60a5fa" text-anchor="middle">Health Checks</text>
+
+    <!-- Uptime -->
+    <rect x="180" width="56" height="22" rx="11" fill="#1a1a1a" opacity=".8" stroke="#4ade80" stroke-width=".8"/>
+    <text x="208" y="15" fill="#4ade80" text-anchor="middle">Uptime</text>
+
+    <!-- Auto-Detect -->
+    <rect x="244" width="72" height="22" rx="11" fill="#1a1a1a" opacity=".8" stroke="#fbbf24" stroke-width=".8"/>
+    <text x="280" y="15" fill="#fbbf24" text-anchor="middle">Auto-Detect</text>
+
+    <!-- 15 Frameworks -->
+    <rect x="324" width="88" height="22" rx="11" fill="#1a1a1a" opacity=".8" stroke="#f87171" stroke-width=".8"/>
+    <text x="368" y="15" fill="#f87171" text-anchor="middle">15 Frameworks</text>
+  </g>
+</svg>

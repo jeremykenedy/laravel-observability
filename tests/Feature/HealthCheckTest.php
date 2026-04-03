@@ -6,6 +6,7 @@ use Database\Seeders\BlockedItemsTableSeeder;
 use Database\Seeders\BlockedTypeTableSeeder;
 use Database\Seeders\PermissionsTableSeeder;
 use Database\Seeders\RolesTableSeeder;
+use Illuminate\Support\Facades\Blade;
 
 beforeEach(function () {
     $this->seed(BlockedTypeTableSeeder::class);
@@ -133,7 +134,7 @@ it('health endpoint works across all frontend frameworks', function () {
 // ========================================================================
 
 it('observabilityScripts blade directive exists', function () {
-    $compiled = \Illuminate\Support\Facades\Blade::compileString('@observabilityScripts');
+    $compiled = Blade::compileString('@observabilityScripts');
     expect($compiled)->toContain('getFrontendSnippets');
 });
 

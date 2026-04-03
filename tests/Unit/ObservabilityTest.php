@@ -3,6 +3,7 @@
 use Jeremykenedy\LaravelObservability\Health\HealthChecker;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
 use Jeremykenedy\LaravelObservability\Services\UptimeService;
+use Illuminate\Support\Facades\Artisan;
 
 // ========================================================================
 // ServiceProvider & Container
@@ -240,5 +241,5 @@ it('statuscake returns null without api key', function () {
 // ========================================================================
 
 it('observability install command is registered', function () {
-    expect(array_keys(\Illuminate\Support\Facades\Artisan::all()))->toContain('observability:install');
+    expect(array_keys(Artisan::all()))->toContain('observability:install');
 });
