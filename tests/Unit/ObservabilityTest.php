@@ -1,9 +1,9 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Jeremykenedy\LaravelObservability\Health\HealthChecker;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
 use Jeremykenedy\LaravelObservability\Services\UptimeService;
-use Illuminate\Support\Facades\Artisan;
 
 // ========================================================================
 // ServiceProvider & Container
