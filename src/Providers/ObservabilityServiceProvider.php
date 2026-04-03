@@ -6,13 +6,13 @@ namespace Jeremykenedy\LaravelObservability\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use Jeremykenedy\LaravelObservability\Health\HealthChecker;
-use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
-use Jeremykenedy\LaravelObservability\Services\UptimeService;
 use Jeremykenedy\LaravelObservability\Console\InstallCommand;
 use Jeremykenedy\LaravelObservability\Console\SwitchCommand;
 use Jeremykenedy\LaravelObservability\Console\UpdateCommand;
+use Jeremykenedy\LaravelObservability\Health\HealthChecker;
 use Jeremykenedy\LaravelObservability\Livewire\HealthDashboard;
+use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
+use Jeremykenedy\LaravelObservability\Services\UptimeService;
 use Livewire\Livewire;
 
 class ObservabilityServiceProvider extends ServiceProvider
