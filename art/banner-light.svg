@@ -18,39 +18,48 @@
   <rect width="800" height="200" rx="16" fill="#fff" stroke="#e5e7eb" stroke-width="1"/>
 
   <!-- Monitoring illustration (right side) -->
-  <g transform="translate(650, 25)">
+  <g transform="translate(560, 25)">
     <!-- Dashboard card -->
-    <rect width="120" height="140" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+    <rect width="190" height="140" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
 
     <!-- Heartbeat line -->
-    <polyline points="12,75 28,75 36,50 44,100 52,55 60,85 68,75 80,75 88,45 96,90 104,60 110,75"
+    <polyline points="20,80 45,80 55,50 65,110 75,60 85,90 95,80 120,80 130,45 140,95 150,65 160,80 175,80"
               fill="none" stroke="url(#pulse-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 
     <!-- Status dots -->
-    <circle cx="20" cy="28" r="4" fill="url(#pulse-green)"/>
-    <circle cx="35" cy="28" r="4" fill="url(#pulse-green)"/>
-    <circle cx="50" cy="28" r="4" fill="url(#pulse-blue)"/>
-    <circle cx="65" cy="28" r="4" fill="url(#pulse-green)"/>
-    <circle cx="80" cy="28" r="4" fill="url(#pulse-amber)"/>
-    <circle cx="95" cy="28" r="4" fill="url(#pulse-green)"/>
+    <circle cx="30" cy="30" r="6" fill="url(#pulse-green)"/>
+    <circle cx="50" cy="30" r="6" fill="url(#pulse-green)"/>
+    <circle cx="70" cy="30" r="6" fill="url(#pulse-blue)"/>
+    <circle cx="90" cy="30" r="6" fill="url(#pulse-green)"/>
+    <circle cx="110" cy="30" r="6" fill="url(#pulse-amber)"/>
+    <circle cx="130" cy="30" r="6" fill="url(#pulse-green)"/>
+    <circle cx="150" cy="30" r="6" fill="url(#pulse-green)"/>
 
     <!-- Mini bar chart -->
-    <rect x="15" y="100" width="10" height="22" rx="2" fill="#dbeafe"/>
-    <rect x="30" y="95" width="10" height="27" rx="2" fill="#bfdbfe"/>
-    <rect x="45" y="90" width="10" height="32" rx="2" fill="#93c5fd"/>
-    <rect x="60" y="97" width="10" height="25" rx="2" fill="#bfdbfe"/>
-    <rect x="75" y="86" width="10" height="36" rx="2" fill="#60a5fa"/>
-    <rect x="90" y="93" width="10" height="29" rx="2" fill="#93c5fd"/>
+    <rect x="25" y="105" width="12" height="20" rx="2" fill="#dbeafe"/>
+    <rect x="45" y="98" width="12" height="27" rx="2" fill="#bfdbfe"/>
+    <rect x="65" y="92" width="12" height="33" rx="2" fill="#93c5fd"/>
+    <rect x="85" y="100" width="12" height="25" rx="2" fill="#bfdbfe"/>
+    <rect x="105" y="88" width="12" height="37" rx="2" fill="#60a5fa"/>
+    <rect x="125" y="95" width="12" height="30" rx="2" fill="#93c5fd"/>
+    <rect x="145" y="102" width="12" height="23" rx="2" fill="#bfdbfe"/>
+
+    <!-- Alert bell icon -->
+    <g transform="translate(165, 15)">
+      <circle cx="8" cy="4" r="4" fill="url(#pulse-amber)" opacity=".3"/>
+      <circle cx="8" cy="4" r="2" fill="url(#pulse-amber)"/>
+    </g>
   </g>
 
   <!-- Title -->
-  <text x="50" y="80" fill="#0f172a" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="36" font-weight="700" letter-spacing="-.5">Laravel Observability</text>
+  <text x="50" y="72" fill="#0f172a" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="36" font-weight="700" letter-spacing="-.5">Laravel Observability</text>
 
-  <!-- Tagline -->
-  <text x="50" y="105" fill="#64748b" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Auto-detect 25+ monitoring providers with health checks</text>
+  <!-- Tagline (two lines) -->
+  <text x="50" y="95" fill="#64748b" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">Auto-detect 25+ monitoring providers</text>
+  <text x="50" y="112" fill="#64748b" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13">with health checks and uptime tracking</text>
 
   <!-- Feature pills -->
-  <g transform="translate(50, 125)" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="10" font-weight="500">
+  <g transform="translate(50, 130)" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="10" font-weight="500">
     <!-- 25+ Providers -->
     <rect width="82" height="22" rx="11" fill="#f5f3ff" stroke="#c4b5fd" stroke-width=".8"/>
     <text x="41" y="15" fill="#6d28d9" text-anchor="middle">25+ Providers</text>
