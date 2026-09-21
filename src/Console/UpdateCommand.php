@@ -9,12 +9,9 @@ use Jeremykenedy\LaravelObservability\Console\Concerns\HandlesFrameworkSetup;
 use Jeremykenedy\LaravelObservability\Console\Concerns\HasInstallPrompts;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
 
-use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
-use function Laravel\Prompts\text;
-use function Laravel\Prompts\warning;
+use function Laravel\Prompts\password;
 
 class UpdateCommand extends Command
 {
@@ -23,12 +20,17 @@ class UpdateCommand extends Command
 
     protected $signature = 'observability:update
         {--css= : CSS framework (tailwind, bootstrap5, bootstrap4)}
-        {--frontend= : Frontend framework (blade, livewire, vue, react, svelte)}';
+        {--frontend= : Frontend framework (blade, livewire, vue, react, svelte)}
+        {--ui-kit : Use the installed Laravel UI Kit framework settings}';
 
     protected $description = 'Update the CSS/frontend framework and manage observability providers';
 
-    public function handle(): int
+    public function handle(ProviderDetector $detector): int
     {
+        if (!$this->validateFrameworks() || !$this->canSaveFrameworks()) {
+            return self::FAILURE;
+        }
+
         $this->renderBanner('OBSERVE');
 
         if (!$this->isInstalled()) {
@@ -43,48 +45,16 @@ class UpdateCommand extends Command
         $css = $this->option('css');
         $frontend = $this->option('frontend');
 
-        // If framework flags provided, update frameworks
-        if ($css || $frontend) {
-            $validCss = ['tailwind', 'bootstrap5', 'bootstrap4'];
-            $validFrontend = ['blade', 'livewire', 'vue', 'react', 'svelte'];
-
-            if ($css && !in_array($css, $validCss)) {
-                $this->error("Invalid CSS framework: {$css}. Valid: ".implode(', ', $validCss));
-
-                return self::FAILURE;
-            }
-
-            if ($frontend && !in_array($frontend, $validFrontend)) {
-                $this->error("Invalid frontend: {$frontend}. Valid: ".implode(', ', $validFrontend));
-
-                return self::FAILURE;
-            }
-
-            if ($css) {
-                $this->setCssFramework($css);
-                info("CSS framework updated to: {$css}");
-            }
-
-            if ($frontend) {
-                $this->setFrontendFramework($frontend);
-                info("Frontend framework updated to: {$frontend}");
-            }
-
-            info('Run: php artisan view:clear && npm run build');
+        if ($css !== null || $frontend !== null || !$this->input->isInteractive()) {
+            $this->saveFrameworks($this->getCssOption(), $this->getFrontendOption());
+            $this->info('Framework settings saved. Existing configuration and views were preserved.');
+            $this->info('Run npm run build if your application bundles frontend assets.');
 
             return self::SUCCESS;
         }
 
-        // Interactive mode: show menu
-        $envPath = base_path('.env');
-        if (!file_exists($envPath)) {
-            warning('No .env file found.');
+        $envPath = $this->environment->path();
 
-            return self::FAILURE;
-        }
-
-        // Show current state
-        $detector = app(ProviderDetector::class);
         $detector->detect();
 
         $active = $detector->getActiveProviders();
@@ -99,7 +69,7 @@ class UpdateCommand extends Command
             label: 'What would you like to do?',
             options: [
                 'frameworks'  => 'Change CSS/frontend framework',
-                'config'      => 'Re-publish config (update to latest version)',
+                'config'      => 'Publish missing configuration',
                 'credentials' => 'Update credentials for active providers',
                 'toggle'      => 'Enable/disable a provider',
                 'status'      => 'Show detailed provider status',
@@ -129,8 +99,7 @@ class UpdateCommand extends Command
             return;
         }
 
-        $this->setCssFramework($result['css']);
-        $this->setFrontendFramework($result['frontend']);
+        $this->saveFrameworks($result['css'], $result['frontend']);
 
         info("CSS framework updated to: {$result['css']}");
         info("Frontend framework updated to: {$result['frontend']}");
@@ -139,59 +108,39 @@ class UpdateCommand extends Command
 
     protected function republishConfig(): void
     {
-        if (confirm('This will overwrite your published config. Continue?', false)) {
-            spin(
-                fn () => $this->callSilent('vendor:publish', ['--tag' => 'observability-config', '--force' => true]),
-                'Publishing latest config...',
-            );
-            $this->callSilent('config:clear');
-            info('Config updated to latest version.');
-        }
+        $this->call('vendor:publish', ['--tag' => 'observability-config']);
+        $this->info('Existing configuration was preserved. See the package config for new options.');
     }
 
     protected function updateCredentials(string $envPath): void
     {
-        $providers = config('observability.providers', []);
-        $content = file_get_contents($envPath);
+        $values = [];
+        $aliases = ['sentry.dsn' => 'SENTRY_LARAVEL_DSN', 'rollbar.access_token' => 'ROLLBAR_TOKEN'];
 
-        foreach ($providers as $name => $config) {
-            if (!($config['enabled'] ?? false)) {
+        foreach (config('observability.providers', []) as $name => $provider) {
+            if (!($provider['enabled'] ?? false)) {
                 continue;
             }
 
-            info("  {$name}:");
+            foreach (['dsn', 'api_key', 'key', 'access_token', 'project_id', 'project_key', 'license_key', 'app_name', 'push_api_key', 'token', 'tag', 'app_id', 'suite_id'] as $key) {
+                if (!array_key_exists($key, $provider)) {
+                    continue;
+                }
 
-            $keys = array_filter(array_keys($config), fn ($k) => in_array($k, [
-                'dsn', 'api_key', 'key', 'access_token', 'project_id', 'project_key',
-                'license_key', 'app_name', 'push_api_key', 'token', 'tag', 'app_id', 'suite_id',
-            ]));
+                $envKey = $aliases[$name.'.'.$key] ?? strtoupper($name.'_'.$key);
+                $value = password(label: $envKey, hint: 'Leave blank to keep the current value.');
 
-            foreach ($keys as $key) {
-                $envKey = match (true) {
-                    str_contains($content, 'SENTRY_LARAVEL_DSN') && $name === 'sentry' => 'SENTRY_LARAVEL_DSN',
-                    default                                                            => strtoupper($name).'_'.strtoupper($key),
-                };
-
-                $current = env($envKey, '');
-                $masked = $current ? substr($current, 0, 4).'...'.substr($current, -4) : '(empty)';
-
-                $value = text(
-                    label: "  {$envKey} (current: {$masked})",
-                    placeholder: 'Enter new value or leave blank to keep current',
-                );
-
-                if ($value) {
-                    if (str_contains($content, "{$envKey}=")) {
-                        $content = preg_replace("/^{$envKey}=.*/m", "{$envKey}={$value}", $content);
-                    } else {
-                        $content .= "\n{$envKey}={$value}";
-                    }
+                if ($value !== '') {
+                    $values[$envKey] = $value;
                 }
             }
         }
 
-        file_put_contents($envPath, $content);
-        $this->callSilent('config:clear');
+        if ($values !== []) {
+            $this->environment->update($values);
+            $this->callSilent('config:clear');
+        }
+
         info('Credentials updated.');
     }
 
@@ -213,21 +162,12 @@ class UpdateCommand extends Command
         $new = !$current;
         $envKey = strtoupper($selected).'_ENABLED';
 
-        $content = file_get_contents($envPath);
-        $newValue = $new ? 'true' : 'false';
-
-        if (str_contains($content, "{$envKey}=")) {
-            $content = preg_replace("/^{$envKey}=.*/m", "{$envKey}={$newValue}", $content);
-        } else {
-            $content .= "\n{$envKey}={$newValue}";
-        }
-
-        file_put_contents($envPath, $content);
+        $this->environment->update([$envKey => $new ? 'true' : 'false']);
         $this->callSilent('config:clear');
         info("{$selected} is now ".($new ? 'ENABLED' : 'DISABLED'));
     }
 
-    protected function showStatus($detector): void
+    protected function showStatus(ProviderDetector $detector): void
     {
         $providers = config('observability.providers', []);
         $rows = [];

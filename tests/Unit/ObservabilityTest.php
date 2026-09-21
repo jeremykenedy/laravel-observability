@@ -5,10 +5,6 @@ use Jeremykenedy\LaravelObservability\Health\HealthChecker;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
 use Jeremykenedy\LaravelObservability\Services\UptimeService;
 
-// ========================================================================
-// ServiceProvider & Container
-// ========================================================================
-
 it('resolves provider detector from container', function () {
     expect(app(ProviderDetector::class))->toBeInstanceOf(ProviderDetector::class);
 });
@@ -64,10 +60,6 @@ it('each provider config has docs field', function () {
     }
 });
 
-// ========================================================================
-// ProviderDetector: detection
-// ========================================================================
-
 it('detect returns array', function () {
     expect((new ProviderDetector())->detect())->toBeArray();
 });
@@ -91,10 +83,6 @@ it('getDetected returns empty before detect called', function () {
     expect((new ProviderDetector())->getDetected())->toBeEmpty();
 });
 
-// ========================================================================
-// ProviderDetector: isActive
-// ========================================================================
-
 it('isActive returns false for unconfigured providers', function () {
     $d = new ProviderDetector();
     $d->detect();
@@ -109,10 +97,6 @@ it('isActive returns true for enabled and detected provider', function () {
     expect($d->isActive('lighthouse'))->toBeTrue();
 });
 
-// ========================================================================
-// ProviderDetector: getActiveProviders
-// ========================================================================
-
 it('getActiveProviders filters to only active', function () {
     config(['observability.providers.lighthouse.enabled' => true]);
     config(['observability.providers.ssl_checker.enabled' => false]);
@@ -122,10 +106,6 @@ it('getActiveProviders filters to only active', function () {
     expect($active)->toContain('lighthouse');
     expect($active)->not->toContain('ssl_checker');
 });
-
-// ========================================================================
-// ProviderDetector: getProvidersByType
-// ========================================================================
 
 it('getProvidersByType returns correct types', function () {
     config(['observability.providers.logrocket.enabled' => true]);
@@ -141,10 +121,6 @@ it('getProvidersByType returns empty for nonexistent type', function () {
     $d->detect();
     expect($d->getProvidersByType('nonexistent'))->toBeEmpty();
 });
-
-// ========================================================================
-// ProviderDetector: getFrontendSnippets
-// ========================================================================
 
 it('getFrontendSnippets returns empty when nothing enabled', function () {
     expect((new ProviderDetector())->getFrontendSnippets())->toBeEmpty();
@@ -169,10 +145,6 @@ it('getFrontendSnippets excludes backend-only providers', function () {
     expect($d->getFrontendSnippets())->not->toHaveKey('sentry');
 });
 
-// ========================================================================
-// ProviderDetector: getUptimeProviders
-// ========================================================================
-
 it('getUptimeProviders returns only enabled', function () {
     config(['observability.uptime.uptimerobot.enabled' => true]);
     config(['observability.uptime.statuscake.enabled' => false]);
@@ -187,10 +159,6 @@ it('getUptimeProviders returns empty when none enabled', function () {
     config(['observability.uptime.statuscake.enabled' => false]);
     expect((new ProviderDetector())->getUptimeProviders())->toBeEmpty();
 });
-
-// ========================================================================
-// HealthChecker
-// ========================================================================
 
 it('health checker runs all checks', function () {
     config(['observability.health.checks' => ['database', 'cache', 'storage', 'queue']]);
@@ -222,10 +190,6 @@ it('health check includes timestamp', function () {
     expect($result['timestamp'])->toBeString();
 });
 
-// ========================================================================
-// UptimeService
-// ========================================================================
-
 it('uptimerobot returns null without api key', function () {
     config(['observability.uptime.uptimerobot.api_key' => null]);
     expect((new UptimeService())->getUptimeRobotStatus())->toBeNull();
@@ -235,10 +199,6 @@ it('statuscake returns null without api key', function () {
     config(['observability.uptime.statuscake.api_key' => null]);
     expect((new UptimeService())->getStatusCakeStatus())->toBeNull();
 });
-
-// ========================================================================
-// Install command
-// ========================================================================
 
 it('observability install command is registered', function () {
     expect(array_keys(Artisan::all()))->toContain('observability:install');

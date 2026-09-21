@@ -5,10 +5,6 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Blade;
 use Jeremykenedy\LaravelObservability\Providers\ObservabilityServiceProvider;
 
-// ========================================================================
-// Health endpoint
-// ========================================================================
-
 it('health endpoint returns 200', function () {
     config(['observability.health.enabled' => true]);
     app()->make(ObservabilityServiceProvider::class, ['app' => app()])->boot();
@@ -64,10 +60,6 @@ it('health endpoint includes queue check', function () {
         ->assertJsonStructure(['checks' => ['queue' => ['status', 'message']]]);
 });
 
-// ========================================================================
-// Providers endpoint
-// ========================================================================
-
 it('providers endpoint returns provider lists', function () {
     config(['observability.health.enabled' => true]);
     app()->make(ObservabilityServiceProvider::class, ['app' => app()])->boot();
@@ -93,10 +85,6 @@ it('providers endpoint active is array', function () {
     expect($response->json('active'))->toBeArray();
 });
 
-// ========================================================================
-// CSS frameworks
-// ========================================================================
-
 it('health endpoint works across all css frameworks', function () {
     config(['observability.health.enabled' => true]);
     app()->make(ObservabilityServiceProvider::class, ['app' => app()])->boot();
@@ -117,10 +105,6 @@ it('providers endpoint works across all css frameworks', function () {
     }
 });
 
-// ========================================================================
-// Frontend frameworks
-// ========================================================================
-
 it('health endpoint works across all frontend frameworks', function () {
     config(['observability.health.enabled' => true]);
     app()->make(ObservabilityServiceProvider::class, ['app' => app()])->boot();
@@ -131,18 +115,10 @@ it('health endpoint works across all frontend frameworks', function () {
     }
 });
 
-// ========================================================================
-// Blade directive
-// ========================================================================
-
 it('observabilityScripts blade directive exists', function () {
     $compiled = Blade::compileString('@observabilityScripts');
     expect($compiled)->toContain('getFrontendSnippets');
 });
-
-// ========================================================================
-// Install command
-// ========================================================================
 
 it('observability install command runs successfully with force', function () {
     $this->artisan('observability:install', [

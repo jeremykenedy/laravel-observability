@@ -14,6 +14,16 @@ class HealthDashboard extends Component
 
     public array $providerData = [];
 
+    protected HealthChecker $checker;
+
+    protected ProviderDetector $detector;
+
+    public function boot(HealthChecker $checker, ProviderDetector $detector): void
+    {
+        $this->checker = $checker;
+        $this->detector = $detector;
+    }
+
     public function mount(): void
     {
         $this->refresh();
@@ -21,21 +31,12 @@ class HealthDashboard extends Component
 
     public function refresh(): void
     {
-        $checker = app(HealthChecker::class);
-        $this->healthData = $checker->run();
-
-        $detector = app(ProviderDetector::class);
-        $detector->detect();
-        $this->providerData = [
-            'active'   => $detector->getActiveProviders(),
-            'backend'  => $detector->getProvidersByType('backend'),
-            'frontend' => $detector->getProvidersByType('frontend'),
-            'testing'  => $detector->getProvidersByType('testing'),
-        ];
+        $this->healthData = $this->checker->run();
+        $this->providerData = $this->detector->summary();
     }
 
     public function render()
     {
-        return view('observability::livewire.dashboard');
+        return view('observability::livewire.dashboard', ['css' => config('observability.css_framework') ?? config('ui-kit.css_framework', 'tailwind')]);
     }
 }

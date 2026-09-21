@@ -1,0 +1,113 @@
+.observability-dashboard {
+    --ob-bg: #f7f9fc;
+    --ob-surface: #fff;
+    --ob-text: #172336;
+    --ob-muted: #526278;
+    --ob-line: #d9e1ec;
+    --ob-good: #14734c;
+    --ob-good-bg: #e9f6ef;
+    --ob-warn: #89510c;
+    --ob-warn-bg: #fff5df;
+    --ob-error: #b02d3d;
+    --ob-error-bg: #ffedf0;
+    color-scheme: light;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1080px;
+    margin: 24px auto;
+    padding: clamp(20px, 4vw, 40px);
+    border: 1px solid var(--ob-line);
+    border-radius: 20px;
+    background: var(--ob-bg);
+    color: var(--ob-text);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+}
+.observability-dashboard[data-theme="dark"],
+.dark .observability-dashboard[data-theme="system"],
+[data-bs-theme="dark"] .observability-dashboard[data-theme="system"] {
+    --ob-bg: #101926;
+    --ob-surface: #172334;
+    --ob-text: #edf2fa;
+    --ob-muted: #a6b5c9;
+    --ob-line: #334359;
+    --ob-good: #74dbac;
+    --ob-good-bg: #133d30;
+    --ob-warn: #f6cf81;
+    --ob-warn-bg: #44351e;
+    --ob-error: #ffa6b1;
+    --ob-error-bg: #4a2430;
+    color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+    .observability-dashboard[data-theme="system"] {
+        --ob-bg: #101926;
+        --ob-surface: #172334;
+        --ob-text: #edf2fa;
+        --ob-muted: #a6b5c9;
+        --ob-line: #334359;
+        --ob-good: #74dbac;
+        --ob-good-bg: #133d30;
+        --ob-warn: #f6cf81;
+        --ob-warn-bg: #44351e;
+        --ob-error: #ffa6b1;
+        --ob-error-bg: #4a2430;
+        color-scheme: dark;
+    }
+}
+.observability-dashboard *, .observability-dashboard *::before { box-sizing: border-box; }
+.observability-dashboard [hidden] { display: none !important; }
+.observability-dashboard .ob-header, .observability-dashboard .ob-actions, .observability-dashboard .ob-check-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.observability-dashboard .ob-header { margin-bottom: 28px; align-items: flex-start; }
+.observability-dashboard .ob-eyebrow { font-size: 11px; letter-spacing: .14em; font-weight: 700; text-transform: uppercase; color: var(--ob-muted); margin: 0 0 8px; }
+.observability-dashboard h1 { font-size: clamp(25px, 4vw, 34px); letter-spacing: -.03em; line-height: 1.2; margin: 0 0 8px; font-weight: 700; color: var(--ob-text); }
+.observability-dashboard h2 { font-size: 18px; font-weight: 650; margin: 28px 0 14px; color: var(--ob-text); }
+.observability-dashboard h3 { font-size: 15px; font-weight: 650; margin: 0; color: var(--ob-text); }
+.observability-dashboard p { margin: 0; }
+.observability-dashboard .ob-muted { color: var(--ob-muted); font-size: 13px; }
+.observability-dashboard .ob-button, .observability-dashboard select {
+    font: inherit;
+    font-size: 13px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid var(--ob-line);
+    border-radius: 8px;
+    color: var(--ob-text);
+    background: var(--ob-surface);
+    cursor: pointer;
+    transition: none;
+    margin: 0;
+}
+.observability-dashboard .ob-button:hover { border-color: var(--ob-muted); }
+.observability-dashboard :focus-visible { outline: 3px solid #5a91e8; outline-offset: 3px; }
+.observability-dashboard .ob-button:disabled { opacity: .65; cursor: wait; }
+.observability-dashboard .ob-theme { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ob-muted); margin: 0; }
+.observability-dashboard .ob-status { padding: 20px 24px; background: var(--ob-surface); border: 1px solid var(--ob-line); border-radius: 12px; }
+.observability-dashboard .ob-status[data-status="healthy"] { background: var(--ob-good-bg); border-color: var(--ob-good); }
+.observability-dashboard .ob-status[data-status="degraded"] { background: var(--ob-warn-bg); border-color: var(--ob-warn); }
+.observability-dashboard .ob-status[data-status="error"] { background: var(--ob-error-bg); border-color: var(--ob-error); }
+.observability-dashboard .ob-status strong { display: block; font-size: 18px; font-weight: 650; }
+.observability-dashboard .ob-status strong::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 10px; border-radius: 50%; background: currentColor; }
+.observability-dashboard .ob-status[data-status="healthy"] strong { color: var(--ob-good); }
+.observability-dashboard .ob-status[data-status="degraded"] strong { color: var(--ob-warn); }
+.observability-dashboard .ob-status[data-status="error"] strong { color: var(--ob-error); }
+.observability-dashboard .ob-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.observability-dashboard .ob-card { border: 1px solid var(--ob-line); border-radius: 12px; padding: 20px; background: var(--ob-surface); color: var(--ob-text); min-width: 0; box-shadow: none; }
+.observability-dashboard .ob-card p { margin-top: 12px; overflow-wrap: anywhere; }
+.observability-dashboard .ob-check-heading h3 { text-transform: capitalize; }
+.observability-dashboard .ob-badge { display: inline-block; font-size: 11px; font-weight: 650; letter-spacing: .03em; text-transform: uppercase; padding: 4px 9px; border-radius: 6px; background: var(--ob-warn-bg); color: var(--ob-warn); }
+.observability-dashboard .ob-badge[data-status="ok"] { background: var(--ob-good-bg); color: var(--ob-good); }
+.observability-dashboard .ob-badge[data-status="error"] { background: var(--ob-error-bg); color: var(--ob-error); }
+.observability-dashboard .ob-providers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.observability-dashboard .ob-providers ul { list-style: none; padding: 0; margin: 12px 0 0; font-size: 13px; color: var(--ob-muted); overflow-wrap: anywhere; }
+.observability-dashboard .ob-providers li + li { margin-top: 6px; }
+.observability-dashboard .ob-footer { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--ob-line); font-size: 12px; color: var(--ob-muted); }
+@media (max-width: 720px) { .observability-dashboard .ob-providers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 440px) { .observability-dashboard .ob-grid, .observability-dashboard .ob-providers { grid-template-columns: 1fr; } .observability-dashboard .ob-actions { gap: 10px; } }

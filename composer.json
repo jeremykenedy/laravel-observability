@@ -1,25 +1,79 @@
 {
     "name": "jeremykenedy/laravel-observability",
-    "description": "A Laravel package providing observability with auto-detection of Sentry, Bugsnag, Datadog, and Flare, plus APM metrics, health checks, and error context enrichment.",
-    "keywords": ["laravel", "observability", "sentry", "bugsnag", "datadog", "flare", "apm", "health"],
+    "description": "Health checks, monitoring provider discovery, uptime status, and a dashboard for Laravel.",
+    "keywords": [
+        "laravel",
+        "observability",
+        "sentry",
+        "bugsnag",
+        "datadog",
+        "flare",
+        "apm",
+        "health"
+    ],
     "license": "MIT",
     "type": "library",
-    "authors": [{"name": "Jeremy Kenedy", "email": "jeremykenedy@gmail.com"}],
+    "authors": [
+        {
+            "name": "Jeremy Kenedy",
+            "email": "jeremykenedy@gmail.com"
+        }
+    ],
     "require": {
-        "php": "^8.2|^8.3|^8.4",
+        "php": "^8.2",
         "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
-        "illuminate/routing": "^10.0|^11.0|^12.0|^13.0"
+        "illuminate/routing": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/filesystem": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/http": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/view": "^10.0|^11.0|^12.0|^13.0",
+        "laravel/prompts": "^0.1.15|^0.2|^0.3",
+        "symfony/process": "^6.2|^7.0|^8.0"
     },
     "require-dev": {
         "laravel/pint": "^1.29",
         "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
         "pestphp/pest": "^2.0|^3.0|^4.0",
-        "pestphp/pest-plugin-laravel": "^2.0|^3.0|^4.0"
+        "pestphp/pest-plugin-laravel": "^2.0|^3.0|^4.0",
+        "livewire/livewire": "^3.0|^4.0"
     },
-    "autoload": { "psr-4": { "Jeremykenedy\\LaravelObservability\\": "src/" } },
-    "autoload-dev": { "psr-4": { "Jeremykenedy\\LaravelObservability\\Tests\\": "tests/" } },
-    "extra": { "laravel": { "providers": ["Jeremykenedy\\LaravelObservability\\Providers\\ObservabilityServiceProvider"] } },
-    "config": { "sort-packages": true, "allow-plugins": { "pestphp/pest-plugin": true } },
+    "autoload": {
+        "psr-4": {
+            "Jeremykenedy\\LaravelObservability\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jeremykenedy\\LaravelObservability\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jeremykenedy\\LaravelObservability\\Providers\\ObservabilityServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "suggest": {
+        "jeremykenedy/laravel-ui-kit": "Optional shared framework settings for --ui-kit.",
+        "livewire/livewire": "Required only for the Livewire dashboard (^3.0|^4.0)."
+    },
+    "scripts": {
+        "test": "@php vendor/bin/pest --ci",
+        "lint": "@php vendor/bin/pint",
+        "lint:test": "@php vendor/bin/pint --test",
+        "check": [
+            "@lint:test",
+            "@test"
+        ]
+    }
 }

@@ -17,15 +17,17 @@ class UptimeService
         }
 
         try {
-            $response = Http::post('https://api.uptimerobot.com/v2/getMonitors', [
+            $response = Http::asForm()->connectTimeout(3)->timeout(10)->retry(2, 200, throw: false)->post('https://api.uptimerobot.com/v2/getMonitors', [
                 'api_key' => $apiKey,
                 'format'  => 'json',
             ]);
 
             if ($response->ok()) {
-                return $response->json('monitors', []);
+                $monitors = $response->json('monitors', []);
+
+                return is_array($monitors) ? $monitors : null;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return null;
         }
 
@@ -41,14 +43,16 @@ class UptimeService
         }
 
         try {
-            $response = Http::withHeaders([
+            $response = Http::connectTimeout(3)->timeout(10)->retry(2, 200, throw: false)->withHeaders([
                 'Authorization' => 'Bearer '.$apiKey,
             ])->get('https://api.statuscake.com/v1/uptime');
 
             if ($response->ok()) {
-                return $response->json('data', []);
+                $data = $response->json('data', []);
+
+                return is_array($data) ? $data : null;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return null;
         }
 

@@ -1,44 +1,65 @@
 <script>
     import { onMount } from 'svelte'
+    import { createDashboard, formatTimestamp, frameworkClasses, providerGroups, readTheme, saveTheme, statusLabel } from '../../shared/observability.js'
+    import '../../shared/observability.css'
 
-    let status = 'loading'
-    let checks = {}
-    let timestamp = ''
-    let providers = { backend: [], frontend: [], testing: [], uptime: [] }
+    export let healthUrl = '/health'
+    export let providersUrl = '/health/providers'
+    export let cssFramework = 'bootstrap5'
+    export let theme = 'system'
 
-    async function fetchHealth() {
-        const h = { Accept: 'application/json' }
-        const [health, prov] = await Promise.all([
-            fetch('/health', { headers: h }).then(r => r.json()),
-            fetch('/health/providers', { headers: h }).then(r => r.json()),
-        ])
-        status = health.status
-        checks = health.checks
-        timestamp = new Date(health.timestamp).toLocaleString()
-        providers = prov
+    let state = { status: 'loading', checks: {}, providers: {}, timestamp: '', loading: true, providerError: '' }
+    let dashboard
+    let mounted = false
+    $: classes = frameworkClasses(cssFramework)
+    $: if (mounted) connect(healthUrl, providersUrl)
+
+    function connect(healthUrl, providersUrl) {
+        dashboard?.destroy()
+        dashboard = createDashboard({ healthUrl, providersUrl }, value => { state = value })
+        dashboard.refresh()
     }
 
-    onMount(fetchHealth)
+    onMount(() => {
+        theme = readTheme(theme)
+        mounted = true
+        return () => dashboard?.destroy()
+    })
 </script>
 
-<div>
-    <h1 class="h3 mb-4">System Health</h1>
-    <div class="alert {status === 'healthy' ? 'alert-success' : 'alert-warning'}">
-        <strong>{status === 'healthy' ? 'All Systems Operational' : 'Degraded'}</strong>
-        <br><small class="text-muted">{timestamp}</small>
+<section class="observability-dashboard {classes.container}" data-theme={theme} data-css={cssFramework} aria-label="System health" aria-busy={state.loading}>
+    <header class="ob-header">
+        <div><p class="ob-eyebrow">Application monitoring</p><h1>System health</h1><p class="ob-muted">Service availability and monitoring providers at a glance.</p></div>
+        <div class="ob-actions">
+            <label class="ob-theme">Appearance
+                <select bind:value={theme} aria-label="Appearance" on:change={() => saveTheme(theme)}>
+                    <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
+                </select>
+            </label>
+            <button type="button" class="ob-button {classes.button}" disabled={state.loading} on:click={() => dashboard?.refresh()}>{state.loading ? 'Refreshing...' : 'Refresh'}</button>
+        </div>
+    </header>
+    <div class="ob-status" data-status={state.status} role="status" aria-live="polite">
+        <strong>{statusLabel(state.status)}</strong><p class="ob-muted">Last checked: {formatTimestamp(state.timestamp)}</p>
     </div>
-    <div class="row g-3 mb-4">
-        {#each Object.entries(checks) as [name, check]}
-            <div class="col-sm-6">
-                <div class="card"><div class="card-body py-2">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-medium text-capitalize">{name}</span>
-                        <span class="badge {check.status === 'ok' ? 'bg-success' : 'bg-danger'}">{check.status}</span>
-                    </div>
-                    <small class="text-muted">{check.message}</small>
-                </div></div>
-            </div>
+    <h2>Health checks</h2>
+    <div class="ob-grid">
+        {#each Object.entries(state.checks) as [name, check] (name)}
+            <article class="ob-card {classes.card}">
+                <div class="ob-check-heading"><h3>{name}</h3><span class="ob-badge" data-status={check.status}>{check.status}</span></div>
+                <p class="ob-muted">{check.message}</p>
+            </article>
         {/each}
     </div>
-    <button on:click={fetchHealth} class="btn btn-sm btn-outline-secondary">Refresh</button>
-</div>
+    {#if !state.loading && !Object.keys(state.checks).length}<p class="ob-muted">No health checks to display.</p>{/if}
+    <h2>Monitoring providers</h2>
+    <p class="ob-muted" role="status">{state.providerError}</p>
+    <div class="ob-providers">
+        {#each Object.entries(providerGroups) as [key, label] (key)}
+            <article class="ob-card"><h3>{label}</h3>
+                <ul>{#each (state.providers[key]?.length ? state.providers[key] : ['None enabled']) as name (name)}<li>{name}</li>{/each}</ul>
+            </article>
+        {/each}
+    </div>
+    <footer class="ob-footer">Checks run when this page opens and when you refresh. Queue status reports the configured driver.</footer>
+</section>

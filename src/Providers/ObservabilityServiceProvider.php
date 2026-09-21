@@ -13,6 +13,7 @@ use Jeremykenedy\LaravelObservability\Health\HealthChecker;
 use Jeremykenedy\LaravelObservability\Livewire\HealthDashboard;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
 use Jeremykenedy\LaravelObservability\Services\UptimeService;
+use Jeremykenedy\LaravelObservability\Support\FrameworkSettings;
 use Livewire\Livewire;
 
 class ObservabilityServiceProvider extends ServiceProvider
@@ -23,18 +24,20 @@ class ObservabilityServiceProvider extends ServiceProvider
         $this->app->singleton(ProviderDetector::class);
         $this->app->singleton(HealthChecker::class);
         $this->app->singleton(UptimeService::class);
-
-        // Load CSS-framework-specific views
-        $css = config('ui-kit.css_framework', 'tailwind');
-        $viewPath = __DIR__.'/../../resources/views/'.$css.'/blade';
-        if (!is_dir($viewPath)) {
-            $viewPath = __DIR__.'/../../resources/views/tailwind/blade';
-        }
-        $this->loadViewsFrom([$viewPath, __DIR__.'/../../resources/views/'], 'observability');
     }
 
     public function boot(): void
     {
+        $frameworks = $this->app->make(FrameworkSettings::class);
+        $views = __DIR__.'/../../resources/views';
+        $this->loadViewsFrom([
+            resource_path('views/vendor/observability/'.$frameworks->css().'/blade'),
+            $views.'/'.$frameworks->css().'/blade',
+            $views,
+        ], 'observability');
+        Blade::anonymousComponentPath($views.'/components', 'observability');
+        $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'observability');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 InstallCommand::class,
@@ -48,18 +51,18 @@ class ObservabilityServiceProvider extends ServiceProvider
                 __DIR__.'/../../resources/views' => resource_path('views/vendor/observability'),
             ], 'observability-views');
 
-            $frontend = config('ui-kit.frontend', 'blade');
-            if (!in_array($frontend, ['blade', 'livewire'])) {
-                $jsPath = __DIR__.'/../../resources/js/'.$frontend.'/pages';
-                if (is_dir($jsPath)) {
-                    $this->publishes([
-                        $jsPath => resource_path('js/Pages/Observability'),
-                    ], 'observability-'.$frontend);
-                }
+            foreach (['vue', 'react', 'svelte'] as $frontend) {
+                $this->publishes([
+                    __DIR__.'/../../resources/js/'.$frontend.'/pages' => resource_path('js/Pages/Observability'),
+                    __DIR__.'/../../resources/js/shared/observability.js' => resource_path('js/shared/observability.js'),
+                    __DIR__.'/../../resources/js/shared/observability.css' => resource_path('js/shared/observability.css'),
+                ], 'observability-'.$frontend);
             }
         }
 
-        if (config('observability.health.enabled', true)) {
+        $this->loadRoutesFrom(__DIR__.'/../../routes/assets.php');
+
+        if (config('observability.enabled', true) && config('observability.health.enabled', true)) {
             $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
         }
 
@@ -70,7 +73,6 @@ class ObservabilityServiceProvider extends ServiceProvider
         $detector = $this->app->make(ProviderDetector::class);
         $detector->detect();
 
-        // Blade directive: @observabilityScripts outputs frontend provider JS snippets
         Blade::directive('observabilityScripts', function () {
             return '<?php
                 $__detector = app(\Jeremykenedy\LaravelObservability\Services\ProviderDetector::class);

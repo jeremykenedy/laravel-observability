@@ -15,7 +15,5 @@ Route::get('/health/uptime', [HealthController::class, 'uptime'])
     ->middleware(array_merge(['web', 'auth'], config('observability.health.middleware', [])))
     ->name('health.uptime');
 
-Route::get('/health/dashboard', function () {
-    return view('observability::dashboard');
-})->middleware(array_merge(['web', 'auth'], config('observability.health.middleware', [])))
+Route::get('/health/dashboard', [HealthController::class, 'dashboard'])->middleware(array_merge(['web', 'auth'], config('observability.health.middleware', [])))
     ->name('health.dashboard');

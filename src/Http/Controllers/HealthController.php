@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Jeremykenedy\LaravelObservability\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Contracts\View\View;
 use Illuminate\Routing\Controller;
 use Jeremykenedy\LaravelObservability\Health\HealthChecker;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
@@ -20,18 +21,17 @@ class HealthController extends Controller
         return response()->json($result, $status);
     }
 
+    public function dashboard(HealthChecker $checker, ProviderDetector $detector): View
+    {
+        return view('observability::dashboard', [
+            'healthData' => $checker->run(),
+            'providerData' => $detector->summary(),
+        ]);
+    }
+
     public function providers(ProviderDetector $detector): JsonResponse
     {
-        $detector->detect();
-
-        return response()->json([
-            'detected' => $detector->getDetected(),
-            'active'   => $detector->getActiveProviders(),
-            'backend'  => $detector->getProvidersByType('backend'),
-            'frontend' => $detector->getProvidersByType('frontend'),
-            'testing'  => $detector->getProvidersByType('testing'),
-            'uptime'   => array_keys($detector->getUptimeProviders()),
-        ]);
+        return response()->json($detector->summary());
     }
 
     public function uptime(UptimeService $uptime): JsonResponse
