@@ -1,44 +1,61 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { createDashboard, formatTimestamp, frameworkClasses, providerGroups, readTheme, saveTheme, statusLabel } from '../../shared/observability.js'
+import '../../shared/observability.css'
 
-const status = ref('loading')
-const checks = ref({})
-const timestamp = ref('')
-const providers = ref({ backend: [], frontend: [], testing: [], uptime: [] })
+const props = defineProps({
+    healthUrl: { type: String, default: '/health' },
+    providersUrl: { type: String, default: '/health/providers' },
+    cssFramework: { type: String, default: 'bootstrap5' },
+    theme: { type: String, default: 'system' },
+})
+const state = ref({ status: 'loading', checks: {}, providers: {}, timestamp: '', loading: true, providerError: '' })
+const theme = ref(props.theme)
+const classes = computed(() => frameworkClasses(props.cssFramework))
+let dashboard
 
-async function fetchHealth() {
-    const h = { Accept: 'application/json' }
-    const [health, prov] = await Promise.all([
-        fetch('/health', { headers: h }).then(r => r.json()),
-        fetch('/health/providers', { headers: h }).then(r => r.json()),
-    ])
-    status.value = health.status
-    checks.value = health.checks
-    timestamp.value = new Date(health.timestamp).toLocaleString()
-    providers.value = prov
+function connect() {
+    dashboard?.destroy()
+    dashboard = createDashboard(props, value => { state.value = value })
+    dashboard.refresh()
 }
 
-onMounted(fetchHealth)
+onMounted(() => { theme.value = readTheme(props.theme); connect() })
+watch(() => [props.healthUrl, props.providersUrl], connect)
+onUnmounted(() => dashboard?.destroy())
 </script>
 
 <template>
-    <div>
-        <h1 class="h3 mb-4">System Health</h1>
-        <div class="alert" :class="status === 'healthy' ? 'alert-success' : 'alert-warning'">
-            <strong>{{ status === 'healthy' ? 'All Systems Operational' : 'Degraded' }}</strong>
-            <br><small class="text-muted">{{ timestamp }}</small>
-        </div>
-        <div class="row g-3 mb-4">
-            <div v-for="(check, name) in checks" :key="name" class="col-sm-6">
-                <div class="card"><div class="card-body py-2">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-medium text-capitalize">{{ name }}</span>
-                        <span class="badge" :class="check.status === 'ok' ? 'bg-success' : 'bg-danger'">{{ check.status }}</span>
-                    </div>
-                    <small class="text-muted">{{ check.message }}</small>
-                </div></div>
+    <section :class="['observability-dashboard', classes.container]" :data-theme="theme" :data-css="cssFramework" aria-label="System health" :aria-busy="state.loading">
+        <header class="ob-header">
+            <div><p class="ob-eyebrow">Application monitoring</p><h1>System health</h1><p class="ob-muted">Service availability and monitoring providers at a glance.</p></div>
+            <div class="ob-actions">
+                <label class="ob-theme">Appearance
+                    <select v-model="theme" aria-label="Appearance" @change="saveTheme(theme)">
+                        <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
+                    </select>
+                </label>
+                <button type="button" :class="['ob-button', classes.button]" :disabled="state.loading" @click="dashboard?.refresh()">{{ state.loading ? 'Refreshing...' : 'Refresh' }}</button>
             </div>
+        </header>
+        <div class="ob-status" :data-status="state.status" role="status" aria-live="polite">
+            <strong>{{ statusLabel(state.status) }}</strong><p class="ob-muted">Last checked: {{ formatTimestamp(state.timestamp) }}</p>
         </div>
-        <button @click="fetchHealth" class="btn btn-sm btn-outline-secondary">Refresh</button>
-    </div>
+        <h2>Health checks</h2>
+        <div class="ob-grid">
+            <article v-for="(check, name) in state.checks" :key="name" :class="['ob-card', classes.card]">
+                <div class="ob-check-heading"><h3>{{ name }}</h3><span class="ob-badge" :data-status="check.status">{{ check.status }}</span></div>
+                <p class="ob-muted">{{ check.message }}</p>
+            </article>
+        </div>
+        <p v-if="!state.loading && !Object.keys(state.checks).length" class="ob-muted">No health checks to display.</p>
+        <h2>Monitoring providers</h2>
+        <p class="ob-muted" role="status">{{ state.providerError }}</p>
+        <div class="ob-providers">
+            <article v-for="(label, key) in providerGroups" :key="key" class="ob-card"><h3>{{ label }}</h3>
+                <ul><li v-for="name in (state.providers[key]?.length ? state.providers[key] : ['None enabled'])" :key="name">{{ name }}</li></ul>
+            </article>
+        </div>
+        <footer class="ob-footer">Checks run when this page opens and when you refresh. Queue status reports the configured driver.</footer>
+    </section>
 </template>

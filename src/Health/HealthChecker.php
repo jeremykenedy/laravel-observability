@@ -7,6 +7,7 @@ namespace Jeremykenedy\LaravelObservability\Health;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class HealthChecker
 {
@@ -40,21 +41,23 @@ class HealthChecker
             DB::connection()->getPdo();
 
             return ['status' => 'ok', 'message' => 'Database connection successful'];
-        } catch (\Throwable $e) {
-            return ['status' => 'error', 'message' => 'Database: '.$e->getMessage()];
+        } catch (\Throwable) {
+            return ['status' => 'error', 'message' => 'Database check failed'];
         }
     }
 
     protected function checkCache(): array
     {
+        $key = 'observability:health:'.Str::uuid();
+
         try {
-            Cache::put('health_check', true, 10);
-            $value = Cache::get('health_check');
-            Cache::forget('health_check');
+            Cache::put($key, true, 10);
+            $value = Cache::get($key);
+            Cache::forget($key);
 
             return $value ? ['status' => 'ok', 'message' => 'Cache working'] : ['status' => 'error', 'message' => 'Cache read failed'];
-        } catch (\Throwable $e) {
-            return ['status' => 'error', 'message' => 'Cache: '.$e->getMessage()];
+        } catch (\Throwable) {
+            return ['status' => 'error', 'message' => 'Cache check failed'];
         }
     }
 
@@ -62,12 +65,23 @@ class HealthChecker
     {
         try {
             $disk = Storage::disk('local');
-            $disk->put('health_check.txt', 'ok');
-            $disk->delete('health_check.txt');
+            $path = 'observability-health-'.Str::uuid().'.txt';
+
+            try {
+                if (!$disk->put($path, 'ok') || $disk->get($path) !== 'ok') {
+                    return ['status' => 'error', 'message' => 'Storage write or read failed'];
+                }
+            } finally {
+                $deleted = $disk->delete($path);
+            }
+
+            if (!$deleted) {
+                return ['status' => 'error', 'message' => 'Storage cleanup failed'];
+            }
 
             return ['status' => 'ok', 'message' => 'Storage writable'];
-        } catch (\Throwable $e) {
-            return ['status' => 'error', 'message' => 'Storage: '.$e->getMessage()];
+        } catch (\Throwable) {
+            return ['status' => 'error', 'message' => 'Storage check failed'];
         }
     }
 
@@ -77,8 +91,8 @@ class HealthChecker
             $connection = config('queue.default', 'sync');
 
             return ['status' => 'ok', 'message' => "Queue driver: {$connection}"];
-        } catch (\Throwable $e) {
-            return ['status' => 'error', 'message' => 'Queue: '.$e->getMessage()];
+        } catch (\Throwable) {
+            return ['status' => 'error', 'message' => 'Queue check failed'];
         }
     }
 }

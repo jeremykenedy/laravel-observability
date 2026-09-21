@@ -1,0 +1,28 @@
+{
+  "name": "laravel-observability-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build --config tests/Browser/vite.config.js",
+    "test": "node --test tests/Browser/dashboard.test.js",
+    "test:browser": "playwright test",
+    "dev": "vite --config tests/Browser/vite.config.js --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@playwright/test": "^1.63.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "bootstrap": "^5.3.8",
+    "bootstrap4": "npm:bootstrap@^4.6.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "svelte": "^5.57.1",
+    "svelte4": "npm:svelte@^4.2.20",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.0",
+    "vue": "^3.5.30"
+  }
+}

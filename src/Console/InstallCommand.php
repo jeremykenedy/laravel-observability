@@ -7,14 +7,15 @@ namespace Jeremykenedy\LaravelObservability\Console;
 use Illuminate\Console\Command;
 use Jeremykenedy\LaravelObservability\Console\Concerns\HandlesFrameworkSetup;
 use Jeremykenedy\LaravelObservability\Console\Concerns\HasInstallPrompts;
+use Symfony\Component\Process\Process;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\note;
+use function Laravel\Prompts\password;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
-use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
 class InstallCommand extends Command
@@ -25,7 +26,8 @@ class InstallCommand extends Command
     protected $signature = 'observability:install
         {--css= : CSS framework (tailwind, bootstrap5, bootstrap4)}
         {--frontend= : Frontend framework (blade, livewire, vue, react, svelte)}
-        {--force : Skip confirmation when reinstalling}';
+        {--force : Skip confirmation when reinstalling}
+        {--ui-kit : Use the installed Laravel UI Kit framework settings}';
 
     protected $description = 'Install and configure the Laravel Observability package';
 
@@ -47,9 +49,9 @@ class InstallCommand extends Command
             'loggly'    => ['label' => 'Loggly (Cloud Log Management)', 'package' => null, 'keys' => ['LOGGLY_TOKEN'], 'signup' => 'https://www.loggly.com/', 'note' => 'Add a custom Monolog handler in config/logging.php.'],
         ],
         'frontend' => [
-            'logrocket' => ['label' => 'LogRocket (Session Replay)', 'npm' => 'logrocket', 'keys' => ['LOGROCKET_APP_ID'], 'signup' => 'https://logrocket.com/', 'blade' => "Add @observabilityScripts to your layout <head> or manually:\nimport LogRocket from 'logrocket';\nLogRocket.init('YOUR_APP_ID');"],
-            'instabug'  => ['label' => 'Instabug (Bug Reporting)', 'npm' => null, 'keys' => ['INSTABUG_TOKEN'], 'signup' => 'https://www.instabug.com/', 'blade' => 'Add @observabilityScripts to your layout <head>. The Instabug SDK loads via CDN.'],
-            'gleap'     => ['label' => 'Gleap (Visual Bug Reports + Feedback)', 'npm' => 'gleap', 'keys' => ['GLEAP_API_KEY'], 'signup' => 'https://gleap.io/', 'blade' => "Add @observabilityScripts to your layout <head> or manually:\nimport Gleap from 'gleap';\nGleap.initialize('YOUR_API_KEY');"],
+            'logrocket' => ['label' => 'LogRocket (Session Replay)', 'npm' => 'logrocket', 'keys' => ['LOGROCKET_APP_ID'], 'signup' => 'https://logrocket.com/', 'blade' => "Initialize the SDK through your application bundle:\nimport LogRocket from 'logrocket';\nLogRocket.init('YOUR_APP_ID');"],
+            'instabug'  => ['label' => 'Instabug (Bug Reporting)', 'npm' => null, 'keys' => ['INSTABUG_TOKEN'], 'signup' => 'https://www.instabug.com/', 'blade' => 'Load the Instabug SDK using the provider documentation before initializing it.'],
+            'gleap'     => ['label' => 'Gleap (Visual Bug Reports + Feedback)', 'npm' => 'gleap', 'keys' => ['GLEAP_API_KEY'], 'signup' => 'https://gleap.io/', 'blade' => "Initialize the SDK through your application bundle:\nimport Gleap from 'gleap';\nGleap.initialize('YOUR_API_KEY');"],
         ],
         'testing' => [
             'ghost_inspector' => ['label' => 'Ghost Inspector (Browser Testing)', 'package' => null, 'keys' => ['GHOST_INSPECTOR_API_KEY'], 'signup' => 'https://ghostinspector.com/'],
@@ -64,6 +66,10 @@ class InstallCommand extends Command
 
     public function handle(): int
     {
+        if (!$this->validateFrameworks() || !$this->canSaveFrameworks()) {
+            return self::FAILURE;
+        }
+
         $this->renderBanner('OBSERVE');
 
         if ($this->isAlreadyInstalled() && !$this->option('force')) {
@@ -75,8 +81,7 @@ class InstallCommand extends Command
             $this->line('  To switch a single setting quickly:');
             $this->line('    <comment>php artisan observability:switch --css=bootstrap5</comment>');
             $this->newLine();
-            $this->warn('  Reinstalling will overwrite your config and published views.');
-            $this->warn('  This is a destructive action that resets all package settings.');
+            $this->line('  Reinstalling preserves existing configuration and published views.');
             $this->newLine();
 
             if ($this->option('no-interaction')) {
@@ -85,9 +90,7 @@ class InstallCommand extends Command
                 return self::FAILURE;
             }
 
-            $confirm = $this->ask('  Type "confirm" to reinstall from scratch, or press any other key to cancel');
-
-            if ($confirm !== 'confirm') {
+            if (!$this->confirm('Continue with installation?', false)) {
                 $this->info('  Cancelled. No changes were made.');
 
                 return self::SUCCESS;
@@ -96,30 +99,19 @@ class InstallCommand extends Command
             $this->newLine();
         }
 
-        // Framework selection
         $frameworkResult = $this->promptFrameworks();
         if ($frameworkResult === false) {
             return self::FAILURE;
         }
 
-        // Check .env
-        $envPath = base_path('.env');
-        $envExists = file_exists($envPath);
-        if (!$envExists) {
-            warning('No .env file found. Credentials will be displayed but not saved automatically.');
-        }
-
-        // In non-interactive mode, skip provider selection
         if ($this->option('no-interaction')) {
-            $this->call('vendor:publish', ['--tag' => 'observability-config', '--force' => true]);
-            $this->setCssFramework($frameworkResult['css']);
-            $this->setFrontendFramework($frameworkResult['frontend']);
+            $this->call('vendor:publish', ['--tag' => 'observability-config']);
+            $this->saveFrameworks($frameworkResult['css'], $frameworkResult['frontend']);
             $this->showSummary('Laravel Observability', $frameworkResult['css'], $frameworkResult['frontend']);
 
             return self::SUCCESS;
         }
 
-        // Step 1: Select backend providers
         info('Step 1/5: Backend Error Tracking & Monitoring');
         $backendChoices = multiselect(
             label: 'Select backend providers to install:',
@@ -127,7 +119,6 @@ class InstallCommand extends Command
             hint: 'Space to select, Enter to confirm. These auto-integrate with your Laravel app.',
         );
 
-        // Step 2: APM
         info('Step 2/5: APM & Performance Monitoring');
         $apmChoices = multiselect(
             label: 'Select APM providers:',
@@ -135,7 +126,6 @@ class InstallCommand extends Command
             hint: 'These monitor your app performance and log management.',
         );
 
-        // Step 3: Frontend
         info('Step 3/5: Frontend Monitoring');
         $frontendChoices = multiselect(
             label: 'Select frontend monitoring providers:',
@@ -143,7 +133,6 @@ class InstallCommand extends Command
             hint: 'These monitor your browser/client-side experience.',
         );
 
-        // Step 4: Testing & Uptime
         info('Step 4/5: Testing, Quality & Uptime');
         $testingOptions = collect($this->providers['testing'])->merge($this->providers['uptime'])
             ->mapWithKeys(fn ($p, $k) => [$k => $p['label']])->all();
@@ -157,15 +146,13 @@ class InstallCommand extends Command
 
         if (empty($allSelected)) {
             warning('No providers selected. Publishing config only.');
-            $this->call('vendor:publish', ['--tag' => 'observability-config', '--force' => true]);
-            $this->setCssFramework($frameworkResult['css']);
-            $this->setFrontendFramework($frameworkResult['frontend']);
+            $this->call('vendor:publish', ['--tag' => 'observability-config']);
+            $this->saveFrameworks($frameworkResult['css'], $frameworkResult['frontend']);
             $this->showSummary('Laravel Observability', $frameworkResult['css'], $frameworkResult['frontend']);
 
             return self::SUCCESS;
         }
 
-        // Step 5: Confirmation
         $this->newLine();
         info('Step 5/5: Confirm Selection');
         $this->newLine();
@@ -186,10 +173,8 @@ class InstallCommand extends Command
             return self::FAILURE;
         }
 
-        // Publish config
-        spin(fn () => $this->callSilent('vendor:publish', ['--tag' => 'observability-config', '--force' => true]), 'Publishing configuration...');
+        spin(fn () => $this->callSilent('vendor:publish', ['--tag' => 'observability-config']), 'Publishing configuration...');
 
-        // Install composer packages
         $composerPackages = [];
         foreach ($allSelected as $name) {
             $provider = $this->findProvider($name);
@@ -201,13 +186,11 @@ class InstallCommand extends Command
         if (!empty($composerPackages)) {
             $pkgList = implode(' ', $composerPackages);
             info("Installing composer packages: {$pkgList}");
-            spin(
-                fn () => exec('cd '.base_path()." && composer require {$pkgList} 2>&1", $output, $code),
-                'Installing composer packages...',
-            );
+            if (!$this->installPackages(['composer', 'require', '--no-interaction', ...$composerPackages])) {
+                return self::FAILURE;
+            }
         }
 
-        // Install npm packages
         $npmPackages = [];
         foreach ($allSelected as $name) {
             $provider = $this->findProvider($name);
@@ -219,13 +202,11 @@ class InstallCommand extends Command
         if (!empty($npmPackages)) {
             $npmList = implode(' ', $npmPackages);
             info("Installing npm packages: {$npmList}");
-            spin(
-                fn () => exec('cd '.base_path()." && npm install {$npmList} 2>&1", $output, $code),
-                'Installing npm packages...',
-            );
+            if (!$this->installPackages(['npm', 'install', ...$npmPackages])) {
+                return self::FAILURE;
+            }
         }
 
-        // Collect credentials
         $this->newLine();
         info('Enter your credentials (leave blank to skip, you can add later in .env):');
         $this->newLine();
@@ -233,18 +214,13 @@ class InstallCommand extends Command
         $envValues = [];
         foreach ($allSelected as $name) {
             $provider = $this->findProvider($name);
-            if (empty($provider['keys'])) {
-                continue;
-            }
-
             info("  {$provider['label']}");
 
             $envValues[strtoupper($name).'_ENABLED'] = 'true';
 
             foreach ($provider['keys'] as $key) {
-                $value = text(
+                $value = password(
                     label: "  {$key}",
-                    placeholder: 'Paste your key here or leave blank',
                     hint: "Get this from: {$provider['signup']}",
                 );
                 if ($value) {
@@ -254,51 +230,18 @@ class InstallCommand extends Command
             $this->newLine();
         }
 
-        // Write to .env
-        if (!empty($envValues) && $envExists) {
-            spin(function () use ($envPath, $envValues) {
-                $content = file_get_contents($envPath);
-                foreach ($envValues as $key => $value) {
-                    if (str_contains($content, "{$key}=")) {
-                        $content = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $content);
-                    } else {
-                        $content .= "\n{$key}={$value}";
-                    }
-                }
-                file_put_contents($envPath, $content);
-            }, 'Saving credentials to .env...');
-        } elseif (!$envExists && !empty($envValues)) {
-            warning('Could not write to .env (file does not exist). Add these manually:');
-            foreach ($envValues as $key => $value) {
-                $this->line("  {$key}={$value}");
-            }
-        }
+        $this->environment->update($envValues);
 
-        // Set frameworks
-        $this->setCssFramework($frameworkResult['css']);
-        $this->setFrontendFramework($frameworkResult['frontend']);
+        $this->saveFrameworks($frameworkResult['css'], $frameworkResult['frontend']);
 
-        // Clear config cache
         $this->callSilent('config:clear');
 
-        // Frontend instructions
         $hasFrontend = !empty(array_intersect($allSelected, array_keys($this->providers['frontend'])));
         if ($hasFrontend) {
-            note(<<<'NOTE'
-            FRONTEND SETUP REQUIRED
-
-            Add this to your Blade layout <head> tag to auto-inject
-            monitoring scripts for all enabled frontend providers:
-
-                @observabilityScripts
-
-            This outputs <script> tags with your credentials for
-            LogRocket, Instabug, Gleap, etc.
-            NOTE);
+            note('Load and initialize browser SDKs through your application bundle. The @observabilityScripts directive supports trusted custom snippets but does not install or bundle SDKs.');
             $this->newLine();
         }
 
-        // Per-provider instructions
         foreach ($allSelected as $name) {
             $provider = $this->findProvider($name);
             $this->line("  <fg=cyan;options=bold>{$provider['label']}</>");
@@ -328,6 +271,18 @@ class InstallCommand extends Command
         info('Active providers: GET /health/providers');
 
         return self::SUCCESS;
+    }
+
+    protected function installPackages(array $command): bool
+    {
+        $process = new Process($command, base_path(), timeout: 300);
+        $process->run(fn ($type, $output) => $this->output->write($output));
+
+        if (!$process->isSuccessful()) {
+            $this->error('Package installation failed. Resolve the error above and run the installer again.');
+        }
+
+        return $process->isSuccessful();
     }
 
     protected function isAlreadyInstalled(): bool

@@ -35,30 +35,12 @@ class SwitchCommand extends Command
             return self::FAILURE;
         }
 
-        $validCss = ['tailwind', 'bootstrap5', 'bootstrap4'];
-        $validFrontend = ['blade', 'livewire', 'vue', 'react', 'svelte'];
-
-        if ($css && !in_array($css, $validCss)) {
-            $this->error("Invalid CSS framework: {$css}. Valid: ".implode(', ', $validCss));
-
+        if (!$this->validateFrameworks() || !$this->canSaveFrameworks()) {
             return self::FAILURE;
         }
 
-        if ($frontend && !in_array($frontend, $validFrontend)) {
-            $this->error("Invalid frontend framework: {$frontend}. Valid: ".implode(', ', $validFrontend));
-
-            return self::FAILURE;
-        }
-
-        if ($css) {
-            $this->setCssFramework($css);
-            info("Observability CSS framework switched to: {$css}");
-        }
-
-        if ($frontend) {
-            $this->setFrontendFramework($frontend);
-            info("Observability frontend framework switched to: {$frontend}");
-        }
+        $this->saveFrameworks($this->getCssOption(), $this->getFrontendOption());
+        info('Observability framework settings saved. Existing configuration and views were preserved.');
 
         info('Run: php artisan view:clear && npm run build');
 

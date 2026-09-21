@@ -51,6 +51,20 @@ class ProviderDetector
         return $this->detected;
     }
 
+    public function summary(): array
+    {
+        $this->detect();
+
+        return [
+            'detected' => $this->getDetected(),
+            'active'   => $this->getActiveProviders(),
+            'backend'  => $this->getProvidersByType('backend'),
+            'frontend' => $this->getProvidersByType('frontend'),
+            'testing'  => $this->getProvidersByType('testing'),
+            'uptime'   => array_keys($this->getUptimeProviders()),
+        ];
+    }
+
     public function getDetected(): array
     {
         return $this->detected;
@@ -64,7 +78,7 @@ class ProviderDetector
 
     public function getActiveProviders(): array
     {
-        return array_filter($this->detected, fn ($p) => $this->isActive($p));
+        return array_values(array_filter($this->detected, fn ($p) => $this->isActive($p)));
     }
 
     public function getProvidersByType(string $type): array
@@ -72,7 +86,9 @@ class ProviderDetector
         $providers = config('observability.providers', []);
 
         return array_keys(array_filter($providers, function ($config) use ($type) {
-            return ($config['type'] ?? 'backend') === $type && ($config['enabled'] ?? false);
+            return (($config['type'] ?? 'backend') === $type
+                || (($config['type'] ?? 'backend') === 'both' && in_array($type, ['backend', 'frontend'], true)))
+                && ($config['enabled'] ?? false);
         }));
     }
 
@@ -92,7 +108,8 @@ class ProviderDetector
                 $snippet = $config['js_snippet'];
                 foreach ($config as $key => $value) {
                     if (is_string($value)) {
-                        $snippet = str_replace('{'.$key.'}', $value, $snippet);
+                        $escaped = substr(json_encode($value, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_THROW_ON_ERROR), 1, -1);
+                        $snippet = str_replace('{'.$key.'}', $escaped, $snippet);
                     }
                 }
                 $snippets[$name] = $snippet;

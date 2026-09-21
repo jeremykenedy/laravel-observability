@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-A comprehensive observability package for Laravel with auto-detection of 25+ monitoring services, health checks, uptime monitoring, and frontend/backend error tracking integration.
+Health checks, monitoring provider discovery, and uptime status for Laravel applications.
 </p>
 
 <p align="center">
@@ -18,58 +18,48 @@ A comprehensive observability package for Laravel with auto-detection of 25+ mon
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
 
-#### Table of Contents
-- [Features](#features)
+## Table of Contents
+
 - [Framework Support](#framework-support)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Blade](#blade)
+- [Livewire](#livewire)
+- [Vue](#vue)
+- [React](#react)
+- [Svelte](#svelte)
+- [Features](#features)
 - [Configuration](#configuration)
-- [All Supported Providers](#all-supported-providers)
-- [Backend Providers](#backend-providers)
-- [APM and Performance](#apm-and-performance)
-- [Frontend Monitoring](#frontend-monitoring)
-- [Testing and Quality](#testing-and-quality)
-- [Uptime Monitoring](#uptime-monitoring)
-- [Usage](#usage)
-  - [Health Checks](#health-checks)
-  - [Provider Detection](#provider-detection)
-  - [Frontend Scripts Blade Directive](#frontend-scripts-blade-directive)
-  - [Uptime API](#uptime-api)
-- [Adding a Backend Provider](#adding-a-backend-provider)
-- [Adding a Frontend Provider](#adding-a-frontend-provider)
+- [Routes and Access](#routes-and-access)
+- [Appearance and Published Views](#appearance-and-published-views)
+- [Monitoring Providers](#monitoring-providers)
 - [Changing Frameworks](#changing-frameworks)
+- [Update](#update)
+- [Switch](#switch)
 - [Artisan Commands](#artisan-commands)
+- [Install Options](#install-options)
 - [Testing](#testing)
 - [License](#license)
 
-## Features
-| Feature |
-| :--- |
-| Auto-detection of 25+ monitoring providers |
-| Health check endpoint with DB, cache, storage, queue checks |
-| Backend providers auto-load when composer package installed |
-| Frontend providers output JS via @observabilityScripts directive |
-| UptimeRobot and StatusCake API integration |
-| Per-provider enable/disable via .env |
-| Provider type classification (backend, frontend, both, testing) |
-| Interactive installer with ASCII art and stepped prompts |
-| 3 CSS frameworks x 5 frontend frameworks = 15 rendering modes |
-| Publishable config via artisan |
-
 ## Framework Support
 
-| | Blade | Livewire | Vue 3 | React 18 | Svelte 4 |
-|---|:---:|:---:|:---:|:---:|:---:|
-| **Tailwind v4** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| **Bootstrap 5** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| **Bootstrap 4** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| CSS framework | Blade | Livewire 3 / 4 | Vue 3 | React 18 / 19 | Svelte 4 / 5 |
+| --- | --- | --- | --- | --- | --- |
+| Tailwind CSS | Yes | Yes | Yes | Yes | Yes |
+| Bootstrap 5 | Yes | Yes | Yes | Yes | Yes |
+| Bootstrap 4 | Yes | Yes | Yes | Yes | Yes |
+
+Tailwind and Blade remain the defaults. Existing UI Kit settings and published view overrides continue to work. Updating with Composer does not publish files, install frontend dependencies, or change the selected framework.
 
 ## Requirements
 
-- PHP 8.2+
-- Laravel 12 or 13
-- A CSS framework: Tailwind CSS v4, Bootstrap 5, or Bootstrap 4
-- A frontend: Blade, Livewire 3, Vue 3, React 18, or Svelte 4
+- PHP 8.2 or newer.
+- Laravel 10, 11, 12, or 13. Laravel 13 requires PHP 8.3 or newer.
+- An authenticated application layout named `layouts.app`, or a custom `observability.layout` value.
+- Livewire, Vue, React, and Svelte are optional. Install the runtime used by your application.
+
+Laravel 10 and 11 remain in the compatibility matrix for existing applications. They are legacy releases with published security advisories. CI allows those dependencies only in isolated compatibility jobs; new installations should use a maintained Laravel release.
 
 ## Installation
 
@@ -78,13 +68,110 @@ composer require jeremykenedy/laravel-observability
 php artisan observability:install
 ```
 
-The installer will:
-1. Walk through CSS and frontend framework selection with back navigation
-2. Guide you through provider selection (backend, APM, frontend, testing/uptime)
-3. Install required composer and npm packages
-4. Collect API credentials and save them to `.env`
+The installer selects CSS and frontend frameworks, publishes missing configuration, and offers optional monitoring providers. It requires a writable environment file. Credentials are entered with hidden input and stored with quoted values when needed.
 
-If the package is already installed, the installer will suggest using `observability:update` instead. To force a fresh reinstall, type `confirm` when prompted or use `--force`.
+Existing installations are detected. Use `observability:update` for routine updates. `--force` skips the reinstall confirmation but still preserves existing configuration, Blade overrides, and published JavaScript files.
+
+For an unattended installation:
+
+```bash
+php artisan observability:install --css=tailwind --frontend=blade --no-interaction
+```
+
+Laravel UI Kit is optional. To copy its installed framework settings without changing other packages:
+
+```bash
+composer require jeremykenedy/laravel-ui-kit
+php artisan observability:install --ui-kit
+```
+
+Explicit `--css` or `--frontend` flags override the corresponding UI Kit choice. Without `--ui-kit`, the command uses Observability's current selection, falling back to existing UI Kit settings and then Tailwind with Blade. No optional package is installed by Composer updates.
+
+## Quick Start
+
+### Blade
+
+Sign in and visit `/health/dashboard`. The dashboard uses your application's `layouts.app` layout and its `content` section. Package styles and scripts are served locally, with no CDN or Alpine.js requirement.
+
+You can also use the dashboard component in a page:
+
+```blade
+<x-observability::dashboard css="tailwind" />
+```
+
+### Livewire
+
+Install Livewire in the host application and include its styles and scripts in the layout:
+
+```bash
+composer require livewire/livewire
+php artisan observability:switch --frontend=livewire
+```
+
+```blade
+<livewire:health-dashboard />
+```
+
+The component follows the selected CSS framework and refreshes through Livewire. The existing `/health/dashboard` route continues to render the Blade page; mount the Livewire component wherever it belongs in your application.
+
+### Vue
+
+```bash
+php artisan observability:switch --css=tailwind --frontend=vue
+```
+
+```vue
+<script setup>
+import HealthDashboard from './Pages/Observability/HealthDashboard.vue'
+</script>
+
+<template>
+    <HealthDashboard css-framework="tailwind" health-url="/health" providers-url="/health/providers" />
+</template>
+```
+
+### React
+
+```bash
+php artisan observability:switch --css=bootstrap5 --frontend=react
+```
+
+```jsx
+import HealthDashboard from './Pages/Observability/HealthDashboard.jsx'
+
+export default function StatusPage() {
+    return <HealthDashboard cssFramework="bootstrap5" healthUrl="/health" providersUrl="/health/providers" />
+}
+```
+
+### Svelte
+
+```bash
+php artisan observability:switch --css=bootstrap4 --frontend=svelte
+```
+
+```svelte
+<script>
+    import HealthDashboard from './Pages/Observability/HealthDashboard.svelte'
+</script>
+
+<HealthDashboard cssFramework="bootstrap4" healthUrl="/health" providersUrl="/health/providers" />
+```
+
+Vue, React, and Svelte pages are published under `resources/js/Pages/Observability`. Their shared script and scoped styles are published under `resources/js/shared`. Keep those relative paths together. Mount the page using your application's existing router or entry point, then run `npm run build`. The commands do not replace the application's router or install a new build system.
+
+SPA components retain their Bootstrap 5 default. Pass `cssFramework` explicitly to use Tailwind or Bootstrap 4. Pass named route URLs from your server when using a subdirectory or custom health endpoint.
+
+## Features
+
+- Database, cache, storage, and queue-driver health checks.
+- Existing JSON endpoints and route names.
+- Monitoring provider discovery and enabled-provider lists.
+- Optional UptimeRobot and StatusCake API requests.
+- Responsive dashboards with system, light, and dark appearance choices.
+- Accessible status messages, labeled controls, and visible keyboard focus.
+- Safe framework switching that preserves application files.
+- Local assets and optional frontend runtimes.
 
 ## Configuration
 
@@ -92,304 +179,116 @@ If the package is already installed, the installer will suggest using `observabi
 php artisan vendor:publish --tag=observability-config
 ```
 
-## All Supported Providers
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `enabled` | `true` | Enable health and dashboard routes |
+| `css_framework` | `null` | `OBSERVABILITY_CSS`; falls back to existing UI Kit selection, then `tailwind` |
+| `frontend` | `null` | `OBSERVABILITY_FRONTEND`; falls back to existing UI Kit selection, then `blade` |
+| `layout` | `layouts.app` | Layout extended by the Blade dashboard |
+| `theme` | `system` | Initial appearance: `system`, `light`, or `dark` |
+| `health.enabled` | `true` | Register health and dashboard routes |
+| `health.route` | `/health` | JSON health endpoint path |
+| `health.checks` | `database`, `cache`, `storage`, `queue` | Checks to run |
+| `health.middleware` | `[]` | Extra middleware for health routes |
+| `providers` | Disabled entries | Provider flags, credentials, packages, and SDK documentation |
+| `uptime` | Disabled entries | UptimeRobot and StatusCake credentials |
+| `context` | Existing defaults | Reserved configuration retained for compatibility; no automatic context enrichment |
 
-| Provider | Type | Website | Documentation | API Reference |
-| :--- | :--- | :--- | :--- | :--- |
-| [Sentry](https://sentry.io/) | Backend | [sentry.io](https://sentry.io/) | [Laravel Guide](https://docs.sentry.io/platforms/php/guides/laravel/) | [API Docs](https://docs.sentry.io/api/) |
-| [Bugsnag](https://www.bugsnag.com/) | Backend | [bugsnag.com](https://www.bugsnag.com/) | [Laravel Guide](https://docs.bugsnag.com/platforms/php/laravel/) | [API Docs](https://docs.bugsnag.com/) |
-| [Flare](https://flareapp.io/) | Backend | [flareapp.io](https://flareapp.io/) | [Setup Guide](https://flareapp.io/docs/general/projects) | -- |
-| [Rollbar](https://rollbar.com/) | Both | [rollbar.com](https://rollbar.com/) | [Laravel Guide](https://docs.rollbar.com/docs/laravel) | [API Docs](https://docs.rollbar.com/reference) |
-| [Honeybadger](https://www.honeybadger.io/) | Both | [honeybadger.io](https://www.honeybadger.io/) | [Laravel Guide](https://docs.honeybadger.io/lib/php/integration/laravel/) | [API Docs](https://docs.honeybadger.io/api/) |
-| [Airbrake](https://airbrake.io/) | Backend | [airbrake.io](https://airbrake.io/) | [Laravel Guide](https://docs.airbrake.io/docs/platforms/framework/php/laravel/) | [API Docs](https://airbrake.io/docs/devops-tools/api/) |
-| [Raygun](https://raygun.com/) | Both | [raygun.com](https://raygun.com/) | [Laravel Guide](https://raygun.com/documentation/language-guides/php/crash-reporting/laravel/) | [API Docs](https://raygun.com/documentation/product-guides/crash-reporting/api/) |
-| [Laravel Exception Notifier](https://github.com/jeremykenedy/laravel-exception-notifier) | Backend | [GitHub](https://github.com/jeremykenedy/laravel-exception-notifier) | [README](https://github.com/jeremykenedy/laravel-exception-notifier#readme) | -- |
-| [New Relic](https://newrelic.com/) | Backend | [newrelic.com](https://newrelic.com/) | [PHP Agent Docs](https://docs.newrelic.com/docs/apm/agents/php-agent/) | [API Docs](https://docs.newrelic.com/docs/apis/rest-api-v2/) |
-| [Datadog](https://www.datadoghq.com/) | Both | [datadoghq.com](https://www.datadoghq.com/) | [PHP Tracing](https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/php/) | [API Docs](https://docs.datadoghq.com/api/latest/) |
-| [AppSignal](https://www.appsignal.com/) | Backend | [appsignal.com](https://www.appsignal.com/) | [PHP Docs](https://docs.appsignal.com/php/) | [API Docs](https://docs.appsignal.com/api/) |
-| [Loggly](https://www.loggly.com/) | Backend | [loggly.com](https://www.loggly.com/) | [PHP Logging](https://documentation.solarwinds.com/en/success_center/loggly/content/admin/php-logging.htm) | [API Docs](https://documentation.solarwinds.com/en/success_center/loggly/content/admin/api-overview.htm) |
-| [LogRocket](https://logrocket.com/) | Frontend | [logrocket.com](https://logrocket.com/) | [Quickstart](https://docs.logrocket.com/docs/quickstart) | [API Docs](https://docs.logrocket.com/reference/) |
-| [Instabug](https://www.instabug.com/) | Frontend | [instabug.com](https://www.instabug.com/) | [Web Integration](https://docs.instabug.com/docs/web-integration) | [API Docs](https://docs.instabug.com/reference/) |
-| [Gleap](https://gleap.io/) | Frontend | [gleap.io](https://gleap.io/) | [JavaScript SDK](https://docs.gleap.io/docs/javascript-sdk) | [API Docs](https://docs.gleap.io/reference/) |
-| [Firebase Crashlytics](https://firebase.google.com/) | Frontend | [firebase.google.com](https://firebase.google.com/) | [Crashlytics Docs](https://firebase.google.com/docs/crashlytics) | [REST API](https://firebase.google.com/docs/reference/rest/) |
-| [Memfault](https://memfault.com/) | Frontend | [memfault.com](https://memfault.com/) | [Docs](https://docs.memfault.com/) | [REST API](https://docs.memfault.com/docs/cloud/rest-api/) |
-| [Ghost Inspector](https://ghostinspector.com/) | Testing | [ghostinspector.com](https://ghostinspector.com/) | [Docs](https://ghostinspector.com/docs/) | [API Docs](https://ghostinspector.com/docs/api/) |
-| [Google Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) | Testing | [Chrome DevTools](https://developer.chrome.com/docs/lighthouse/overview/) | [GitHub](https://github.com/GoogleChrome/lighthouse) | [PageSpeed API](https://developers.google.com/speed/docs/insights/v5/get-started) |
-| [Spatie Link Checker](https://github.com/spatie/laravel-link-checker) | Testing | [GitHub](https://github.com/spatie/laravel-link-checker) | [Usage Guide](https://github.com/spatie/laravel-link-checker#usage) | -- |
-| [SSL Labs](https://www.ssllabs.com/ssltest/) | Testing | [ssllabs.com](https://www.ssllabs.com/ssltest/) | [About](https://www.ssllabs.com/ssltest/) | [API Docs](https://github.com/ssllabs/ssllabs-scan/blob/master/ssllabs-api-docs-v3.md) |
-| [Buddy.Works](https://buddy.works/) | Testing | [buddy.works](https://buddy.works/) | [Docs](https://buddy.works/docs/) | [API Docs](https://buddy.works/docs/api/getting-started/) |
-| [UptimeRobot](https://uptimerobot.com/) | Uptime | [uptimerobot.com](https://uptimerobot.com/) | [API Docs](https://uptimerobot.com/api/) | [API Docs](https://uptimerobot.com/api/) |
-| [StatusCake](https://www.statuscake.com/) | Uptime | [statuscake.com](https://www.statuscake.com/) | [Knowledge Base](https://www.statuscake.com/kb/) | [API v1](https://www.statuscake.com/api/v1/) |
+New installations save `OBSERVABILITY_CSS` and `OBSERVABILITY_FRONTEND` in the environment file. Existing `UI_KIT_CSS` and `UI_KIT_FRONTEND` values continue to work through an installed UI Kit configuration. Commands never modify UI Kit's global settings. A hardcoded value in your published config takes precedence over environment changes, so keep framework entries environment-backed when using the commands.
 
-## Backend Providers
+### Routes and Access
 
-Install the composer package, set `PROVIDER_ENABLED=true` in `.env`, add credentials. The provider auto-loads on the next request.
+| Method | Default path | Route name | Access |
+| --- | --- | --- | --- |
+| GET | `/health` | `health` | Public unless configured otherwise |
+| GET | `/health/providers` | `health.providers` | Public unless configured otherwise |
+| GET | `/health/uptime` | `health.uptime` | `web`, `auth`, and configured middleware |
+| GET | `/health/dashboard` | `health.dashboard` | `web`, `auth`, and configured middleware |
+| GET | `/health/assets/{asset}` | `health.assets` | Public static dashboard assets only; also available when health routes are disabled |
 
-### Sentry
-Real-time error tracking with full stack traces, breadcrumbs, and release tracking.
-- **Package:** `composer require sentry/sentry-laravel`
-- **Env:** `SENTRY_ENABLED=true` `SENTRY_LARAVEL_DSN=your-dsn`
-- **Get Started:** [sentry.io/signup](https://sentry.io/signup/) | **Docs:** [docs.sentry.io/platforms/php/guides/laravel](https://docs.sentry.io/platforms/php/guides/laravel/) | **API:** [docs.sentry.io/api](https://docs.sentry.io/api/)
+Set `health.middleware` to your application's access middleware when provider names or health status should be private. Dashboard and uptime routes keep their existing authentication requirement. Changing `health.route` changes only the main JSON endpoint; sibling paths remain unchanged for compatibility.
 
-### Bugsnag
-Automatic error detection with diagnostic data and stability scores.
-- **Package:** `composer require bugsnag/bugsnag-laravel`
-- **Env:** `BUGSNAG_ENABLED=true` `BUGSNAG_API_KEY=your-key`
-- **Get Started:** [app.bugsnag.com/user/new](https://app.bugsnag.com/user/new) | **Docs:** [docs.bugsnag.com/platforms/php/laravel](https://docs.bugsnag.com/platforms/php/laravel/) | **API:** [bugsnagapiv2.docs.apiary.io](https://bugsnagapiv2.docs.apiary.io/)
+Healthy responses use HTTP 200. Failed or unknown checks use HTTP 503 with the same `status`, `checks`, and `timestamp` fields. Exception details are omitted from public responses. The storage probe checks local-disk write, read, and cleanup. Queue status reports the configured driver; it does not prove that workers are running.
 
-### Flare (Ignition)
-Laravel-native error tracker by Spatie with rich context and solution suggestions.
-- **Package:** `composer require spatie/laravel-ignition`
-- **Env:** `FLARE_ENABLED=true` `FLARE_KEY=your-key`
-- **Get Started:** [flareapp.io](https://flareapp.io/) | **Docs:** [flareapp.io/docs/general/projects](https://flareapp.io/docs/general/projects)
+### Appearance and Published Views
 
-### Rollbar
-Error monitoring with telemetry, deploy tracking, and people tracking.
-- **Package:** `composer require rollbar/rollbar-laravel`
-- **Env:** `ROLLBAR_ENABLED=true` `ROLLBAR_TOKEN=your-token`
-- **Get Started:** [rollbar.com/signup](https://rollbar.com/signup/) | **Docs:** [docs.rollbar.com/docs/laravel](https://docs.rollbar.com/docs/laravel) | **API:** [docs.rollbar.com/reference](https://docs.rollbar.com/reference)
+The Appearance selector remembers a dashboard-specific choice in browser storage. System mode follows the system preference and existing `.dark` or `data-bs-theme="dark"` ancestors. It does not change the host application's theme. Scoped styles supply dark mode even with Bootstrap 4.
 
-### Honeybadger
-Exception monitoring with check-ins, uptime, and cron monitoring.
-- **Package:** `composer require honeybadger-io/honeybadger-laravel`
-- **Env:** `HONEYBADGER_ENABLED=true` `HONEYBADGER_API_KEY=your-key`
-- **Get Started:** [honeybadger.io](https://www.honeybadger.io/) | **Docs:** [docs.honeybadger.io/lib/php/integration/laravel](https://docs.honeybadger.io/lib/php/integration/laravel/) | **API:** [docs.honeybadger.io/api](https://docs.honeybadger.io/api/)
-
-### Airbrake
-Error and performance monitoring with smart grouping.
-- **Package:** `composer require airbrake/phpbrake`
-- **Env:** `AIRBRAKE_ENABLED=true` `AIRBRAKE_PROJECT_ID=id` `AIRBRAKE_PROJECT_KEY=key`
-- **Get Started:** [airbrake.io](https://airbrake.io/) | **Docs:** [docs.airbrake.io/docs/platforms/framework/php/laravel](https://docs.airbrake.io/docs/platforms/framework/php/laravel/) | **API:** [airbrake.io/docs/devops-tools/api](https://airbrake.io/docs/devops-tools/api/)
-
-### Raygun
-Crash reporting and real user monitoring for web and mobile.
-- **Package:** `composer require mindscape/raygun4php`
-- **Env:** `RAYGUN_ENABLED=true` `RAYGUN_API_KEY=your-key`
-- **Get Started:** [raygun.com](https://raygun.com/) | **Docs:** [raygun.com/documentation/language-guides/php/crash-reporting/laravel](https://raygun.com/documentation/language-guides/php/crash-reporting/laravel/) | **API:** [raygun.com/documentation/product-guides/crash-reporting/api](https://raygun.com/documentation/product-guides/crash-reporting/api/)
-
-## APM and Performance
-
-### New Relic
-Full-stack APM with transaction tracing, database monitoring, and infrastructure.
-- **Setup:** Install the [New Relic PHP agent](https://docs.newrelic.com/docs/apm/agents/php-agent/installation/php-agent-installation-overview/) (server-level, no composer)
-- **Env:** `NEW_RELIC_ENABLED=true` `NEW_RELIC_LICENSE_KEY=your-key` `NEW_RELIC_APP_NAME=your-app`
-- **Get Started:** [newrelic.com/signup](https://newrelic.com/signup) | **Docs:** [docs.newrelic.com/docs/apm/agents/php-agent](https://docs.newrelic.com/docs/apm/agents/php-agent/) | **API:** [docs.newrelic.com/docs/apis/rest-api-v2](https://docs.newrelic.com/docs/apis/rest-api-v2/)
-
-### Datadog
-Infrastructure monitoring, APM, and log management.
-- **Setup:** Install the [Datadog PHP tracer](https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/php/) (dd-trace extension)
-- **Env:** `DATADOG_ENABLED=true` `DATADOG_API_KEY=your-key`
-- **Get Started:** [datadoghq.com](https://www.datadoghq.com/) | **Docs:** [docs.datadoghq.com/tracing/trace_collection/dd_libraries/php](https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/php/) | **API:** [docs.datadoghq.com/api/latest](https://docs.datadoghq.com/api/latest/)
-
-### AppSignal
-Performance monitoring and error tracking for Ruby, Elixir, Node.js, and PHP.
-- **Package:** `composer require appsignal/appsignal-laravel`
-- **Env:** `APPSIGNAL_ENABLED=true` `APPSIGNAL_PUSH_API_KEY=your-key`
-- **Get Started:** [appsignal.com](https://www.appsignal.com/) | **Docs:** [docs.appsignal.com/php](https://docs.appsignal.com/php/) | **API:** [docs.appsignal.com/api](https://docs.appsignal.com/api/)
-
-### Loggly
-Cloud log management and analytics.
-- **Setup:** Configure as a custom Monolog handler in `config/logging.php`
-- **Env:** `LOGGLY_ENABLED=true` `LOGGLY_TOKEN=your-token`
-- **Get Started:** [loggly.com](https://www.loggly.com/) | **Docs:** [documentation.solarwinds.com/en/success_center/loggly/content/admin/php-logging.htm](https://documentation.solarwinds.com/en/success_center/loggly/content/admin/php-logging.htm) | **API:** [documentation.solarwinds.com/en/success_center/loggly/content/admin/api-overview.htm](https://documentation.solarwinds.com/en/success_center/loggly/content/admin/api-overview.htm)
-
-## Frontend Monitoring
-
-These providers monitor your frontend (browser sessions, user interactions, crashes). Enable in `.env` and add `@observabilityScripts` to your layout `<head>`, or install npm packages manually.
-
-```html
-<head>
-    @observabilityScripts
-</head>
+```bash
+php artisan vendor:publish --tag=observability-views
 ```
 
-### LogRocket
-Session replay with error tracking and performance monitoring.
-- **npm:** `npm install logrocket`
-- **Env:** `LOGROCKET_ENABLED=true` `LOGROCKET_APP_ID=your-app-id`
-- **Get Started:** [logrocket.com](https://logrocket.com/) | **Docs:** [docs.logrocket.com/docs/quickstart](https://docs.logrocket.com/docs/quickstart) | **API:** [docs.logrocket.com/reference](https://docs.logrocket.com/reference/)
+Existing `resources/views/vendor/observability/dashboard.blade.php` overrides remain first in the lookup order. Framework-specific overrides live under `resources/views/vendor/observability/{css}/blade`. Publishing is optional. Review [the upgrade notes](docs/upgrading.md) before replacing a customized file.
 
-### Instabug
-In-app bug reporting, crash reporting, and user feedback.
-- **Setup:** CDN script or SDK
-- **Env:** `INSTABUG_ENABLED=true` `INSTABUG_TOKEN=your-token`
-- **Get Started:** [instabug.com](https://www.instabug.com/) | **Docs:** [docs.instabug.com/docs/web-integration](https://docs.instabug.com/docs/web-integration) | **API:** [docs.instabug.com/reference](https://docs.instabug.com/reference/)
+### Monitoring Providers
 
-### Gleap
-Visual bug reporting, feature requests, and live chat.
-- **npm:** `npm install gleap`
-- **Env:** `GLEAP_ENABLED=true` `GLEAP_API_KEY=your-key`
-- **Get Started:** [gleap.io](https://gleap.io/) | **Docs:** [docs.gleap.io/docs/javascript-sdk](https://docs.gleap.io/docs/javascript-sdk) | **API:** [docs.gleap.io/reference](https://docs.gleap.io/reference/)
-
-### Firebase Crashlytics
-Crash reporting for mobile apps (iOS/Android). For web, use Firebase Performance Monitoring.
-- **Setup:** Firebase SDK
-- **Get Started:** [firebase.google.com](https://firebase.google.com/) | **Docs:** [firebase.google.com/docs/crashlytics](https://firebase.google.com/docs/crashlytics) | **API:** [firebase.google.com/docs/reference/rest](https://firebase.google.com/docs/reference/rest/)
-
-### Memfault
-Observability for embedded/IoT devices. Integrate via API for device telemetry.
-- **Env:** `MEMFAULT_ENABLED=true` `MEMFAULT_PROJECT_KEY=your-key`
-- **Get Started:** [memfault.com](https://memfault.com/) | **Docs:** [docs.memfault.com](https://docs.memfault.com/) | **API:** [docs.memfault.com/docs/cloud/rest-api](https://docs.memfault.com/docs/cloud/rest-api/)
-
-## Testing and Quality
-
-### Ghost Inspector
-Automated browser testing with visual regression and API-triggered test suites.
-- **Env:** `GHOST_INSPECTOR_ENABLED=true` `GHOST_INSPECTOR_API_KEY=your-key`
-- **Get Started:** [ghostinspector.com](https://ghostinspector.com/) | **Docs:** [ghostinspector.com/docs](https://ghostinspector.com/docs/) | **API:** [ghostinspector.com/docs/api](https://ghostinspector.com/docs/api/)
-
-### Google Lighthouse
-Performance, accessibility, SEO, and best practices auditing.
-- **Setup:** Run via CI: `npx lighthouse <url> --output json --chrome-flags="--headless"`
-- **Get Started:** [developer.chrome.com/docs/lighthouse/overview](https://developer.chrome.com/docs/lighthouse/overview/) | **Docs:** [github.com/GoogleChrome/lighthouse](https://github.com/GoogleChrome/lighthouse) | **API (PageSpeed Insights):** [developers.google.com/speed/docs/insights/v5/get-started](https://developers.google.com/speed/docs/insights/v5/get-started)
-
-### Link Checker
-Automated broken link detection using Spatie's Laravel package.
-- **Package:** `composer require spatie/laravel-link-checker`
-- **Get Started:** [github.com/spatie/laravel-link-checker](https://github.com/spatie/laravel-link-checker) | **Docs:** [github.com/spatie/laravel-link-checker#usage](https://github.com/spatie/laravel-link-checker#usage)
-
-### SSL Checker
-Monitor SSL certificate validity and configuration.
-- **Get Started:** [ssllabs.com/ssltest](https://www.ssllabs.com/ssltest/) | **API:** [github.com/ssllabs/ssllabs-scan/blob/master/ssllabs-api-docs-v3.md](https://github.com/ssllabs/ssllabs-scan/blob/master/ssllabs-api-docs-v3.md)
-
-### Visual Regression Tests (Buddy.Works)
-Visual regression testing integrated into CI/CD pipelines.
-- **Get Started:** [buddy.works](https://buddy.works/) | **Docs:** [buddy.works/docs](https://buddy.works/docs/) | **API:** [buddy.works/docs/api/getting-started](https://buddy.works/docs/api/getting-started/)
-
-## Uptime Monitoring
-
-External services that ping your application to monitor availability. Configure via their dashboards, then optionally pull status data via the package's API integration.
-
-### UptimeRobot
-Free uptime monitoring with 5-minute checks and status pages.
-- **Env:** `UPTIMEROBOT_ENABLED=true` `UPTIMEROBOT_API_KEY=your-key`
-- **Get Started:** [uptimerobot.com](https://uptimerobot.com/) | **Docs:** [uptimerobot.com/api](https://uptimerobot.com/api/) | **API:** [uptimerobot.com/api/getMonitors](https://uptimerobot.com/api/)
-
-### StatusCake
-Website monitoring with uptime, page speed, and domain checks.
-- **Env:** `STATUSCAKE_ENABLED=true` `STATUSCAKE_API_KEY=your-key`
-- **Get Started:** [statuscake.com](https://www.statuscake.com/) | **Docs:** [statuscake.com/kb](https://www.statuscake.com/kb/) | **API:** [statuscake.com/api/v1](https://www.statuscake.com/api/v1/)
-
-## Usage
-
-### Health Checks
-
-```
-GET /health           -> status, checks
-GET /health/providers -> detected, active, backend, frontend, testing, uptime
-GET /health/uptime    -> uptimerobot, statuscake data
-```
-
-### Provider Detection
-
-```php
-$detector = app(ProviderDetector::class);
-$detector->detect();
-$detector->getActiveProviders();
-$detector->getProvidersByType('frontend');
-$detector->getFrontendSnippets();
-```
-
-### Frontend Scripts Blade Directive
-
-```html
-<head>
-    @observabilityScripts
-</head>
-```
-
-Outputs script tags for all enabled frontend providers with credentials injected.
-
-### Uptime API
-
-```php
-$uptime = app(UptimeService::class);
-$uptime->getUptimeRobotStatus();
-$uptime->getStatusCakeStatus();
-```
-
-## Adding a Backend Provider
-
-1. composer require vendor/package
-2. Set PROVIDER_ENABLED=true in .env
-3. Auto-detected on next request
-
-## Adding a Frontend Provider
-
-1. Set PROVIDER_ENABLED=true in .env
-2. Add @observabilityScripts to layout head
-3. Or install npm package and init manually
+See the [provider reference](docs/providers.md) for the supported services, SDK documentation, credential setup, browser scripts, and uptime behavior. Each service's SDK or agent is responsible for capturing its own telemetry.
 
 ## Changing Frameworks
 
-After installation, use **update** or **switch** to change frameworks without losing configuration.
-
-### Update (Interactive)
-
-The update command walks through framework selection with an interactive menu:
+### Update
 
 ```bash
 php artisan observability:update
-```
-
-Or pass options directly:
-
-```bash
 php artisan observability:update --css=bootstrap5 --frontend=vue
 ```
 
-| Option | Values | Description |
-|--------|--------|-------------|
-| `--css` | `tailwind`, `bootstrap5`, `bootstrap4` | Change CSS framework |
-| `--frontend` | `blade`, `livewire`, `vue`, `react`, `svelte` | Change frontend framework |
+The interactive menu provides framework selection, credential updates, provider toggles, and status. Publishing configuration only fills missing files. It never replaces your existing config.
 
-The update command also provides provider management: re-publish config, update credentials, enable/disable providers, and view detailed status.
+| Option | Values | Purpose |
+| --- | --- | --- |
+| `--css` | `tailwind`, `bootstrap5`, `bootstrap4` | Select CSS framework |
+| `--frontend` | `blade`, `livewire`, `vue`, `react`, `svelte` | Select frontend and publish missing SPA files |
+| `--ui-kit` | Flag | Copy settings from an installed UI Kit |
+| `--no-interaction` | Flag | Keep unspecified choices and skip provider prompts |
 
-### Switch (Quick)
+### Switch
 
 ```bash
 php artisan observability:switch --css=bootstrap5
 php artisan observability:switch --frontend=livewire
-php artisan observability:switch --css=tailwind --frontend=vue
 ```
 
-After switching, run `npm run build`.
+| Option | Values | Purpose |
+| --- | --- | --- |
+| `--css` | `tailwind`, `bootstrap5`, `bootstrap4` | Change CSS while retaining the frontend |
+| `--frontend` | `blade`, `livewire`, `vue`, `react`, `svelte` | Change frontend while retaining CSS |
+
+At least one flag is required. Existing configuration and customized files are preserved. After switching a bundled frontend, run `npm run build` and update the component's `cssFramework` prop if needed. The bundled Blade page does not need a frontend build.
 
 ## Artisan Commands
 
-| Command | Description |
-|---------|-------------|
-| `observability:install` | Fresh install with interactive prompts. Detects existing installation. |
-| `observability:update` | Update framework selection and manage providers interactively. Does not overwrite config. |
-| `observability:switch` | Quick framework switch via flags. |
+| Command | Description | Flags |
+| --- | --- | --- |
+| `observability:install` | Configure the package, detect existing installation, and offer providers | `--css`, `--frontend`, `--force`, `--ui-kit`, `--no-interaction` |
+| `observability:update` | Update choices and manage providers without overwriting config | `--css`, `--frontend`, `--ui-kit`, `--no-interaction` |
+| `observability:switch` | Change one or both framework choices | `--css`, `--frontend`, `--no-interaction` |
 
 ### Install Options
 
 | Flag | Description |
-|------|-------------|
+| --- | --- |
 | `--css=` | CSS framework: `tailwind`, `bootstrap5`, `bootstrap4` |
 | `--frontend=` | Frontend: `blade`, `livewire`, `vue`, `react`, `svelte` |
-| `--force` | Skip reinstall confirmation when already installed |
-
-### Update Options
-
-| Flag | Description |
-|------|-------------|
-| `--css=` | CSS framework: `tailwind`, `bootstrap5`, `bootstrap4` |
-| `--frontend=` | Frontend: `blade`, `livewire`, `vue`, `react`, `svelte` |
-
-### Switch Options
-
-| Flag | Description |
-|------|-------------|
-| `--css=` | CSS framework: `tailwind`, `bootstrap5`, `bootstrap4` |
-| `--frontend=` | Frontend: `blade`, `livewire`, `vue`, `react`, `svelte` |
+| `--force` | Skip the existing-installation confirmation; preserve published files |
+| `--ui-kit` | Use framework settings from an installed Laravel UI Kit |
+| `--no-interaction` | Use supplied flags or current defaults and skip provider setup |
 
 ## Testing
 
 ```bash
-./vendor/bin/pest
+composer install
+composer check
+npm ci
+npm run build
+npm test
+npx playwright install chromium
+npm run test:browser
 ```
+
+PHP tests cover framework selection, real environment-file writes, published-file preservation, health failures, authentication, provider output, uptime requests, and Livewire rendering. Browser tests exercise all frontend/CSS combinations, light and dark appearance, refresh recovery, keyboard-accessible controls, and mobile overflow. Svelte 4 is compiled separately to guard existing applications; its compiler is a development-only compatibility fixture with known upstream advisories.
+
+CI runs PHP 8.2 through 8.5 on compatible Laravel 10 through 13 combinations, with Livewire 3 and 4. It also runs Pint, Composer validation and audit, frontend builds, and browser tests. See [upgrade notes](docs/upgrading.md) for the compatibility boundaries.
 
 ## License
 

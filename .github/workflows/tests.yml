@@ -5,76 +5,104 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tests:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        php: [8.2, 8.3, 8.4]
-        laravel: ['12.*', '13.*']
-        exclude:
-          - php: 8.2
-            laravel: '13.*'
         include:
-          - laravel: '12.*'
-            testbench: '10.*'
-          - laravel: '13.*'
-            testbench: '11.*'
-
-    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
-
+          - { php: '8.2', laravel: '10.*', testbench: '8.*', livewire: '3.*', legacy: true }
+          - { php: '8.3', laravel: '10.*', testbench: '8.*', livewire: '3.*', legacy: true }
+          - { php: '8.2', laravel: '11.*', testbench: '9.*', livewire: '3.*', legacy: true }
+          - { php: '8.3', laravel: '11.*', testbench: '9.*', livewire: '3.*', legacy: true }
+          - { php: '8.4', laravel: '11.*', testbench: '9.*', livewire: '3.*', legacy: true }
+          - { php: '8.2', laravel: '12.*', testbench: '10.*', livewire: '3.*' }
+          - { php: '8.3', laravel: '12.*', testbench: '10.*', livewire: '3.*' }
+          - { php: '8.4', laravel: '12.*', testbench: '10.*', livewire: '4.*' }
+          - { php: '8.5', laravel: '12.*', testbench: '10.*', livewire: '4.*' }
+          - { php: '8.3', laravel: '13.*', testbench: '11.*', livewire: '3.*' }
+          - { php: '8.4', laravel: '13.*', testbench: '11.*', livewire: '4.*' }
+          - { php: '8.5', laravel: '13.*', testbench: '11.*', livewire: '4.*' }
+    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }} / Livewire ${{ matrix.livewire }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip
+          extensions: dom, curl, mbstring, pdo_sqlite
           coverage: none
-
+      - name: Allow legacy dependencies in compatibility tests
+        if: matrix.legacy
+        run: composer config audit.block-insecure false
+      - name: Select framework versions
+        run: composer require --dev "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "livewire/livewire:${{ matrix.livewire }}" --no-interaction --no-update
       - name: Install dependencies
-        run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-          composer update --prefer-dist --no-interaction
+        run: composer update --prefer-dist --no-interaction
+      - name: Run PHP tests
+        run: composer test
 
-      - name: Run tests
-        run: ./vendor/bin/pest --ci
-
-  lint:
+  quality:
     runs-on: ubuntu-latest
-    name: Pint
-
+    timeout-minutes: 10
+    name: Style and dependency audit
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.4
+          php-version: '8.5'
           coverage: none
+      - run: composer validate --strict
+      - run: composer install --prefer-dist --no-interaction
+      - run: composer lint:test
+      - run: composer audit
+      - name: Test without optional Livewire
+        run: |
+          composer remove --dev livewire/livewire --no-interaction
+          composer test
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction
-
-      - name: Run Pint
-        run: ./vendor/bin/pint --test
-
-  js-check:
+  frontend:
     runs-on: ubuntu-latest
-    name: Frontend Components
-
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { react: '18', livewire: '3.*' }
+          - { react: '19', livewire: '4.*' }
+    name: Browser / React ${{ matrix.react }} / Livewire ${{ matrix.livewire }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Check Vue component exists
-        run: test -f resources/js/vue/pages/HealthDashboard.vue
-
-      - name: Check React component exists
-        run: test -f resources/js/react/pages/HealthDashboard.jsx
-
-      - name: Check Svelte component exists
-        run: test -f resources/js/svelte/pages/HealthDashboard.svelte
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: pdo_sqlite
+          coverage: none
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: composer install --prefer-dist --no-interaction
+      - run: composer require --dev "livewire/livewire:${{ matrix.livewire }}" --with-all-dependencies --no-interaction
+      - run: npm ci
+      - run: npm install --no-save react@${{ matrix.react }} react-dom@${{ matrix.react }}
+      - run: npm run build
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: browser-results-react-${{ matrix.react }}
+          path: test-results
+          retention-days: 7
