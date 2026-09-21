@@ -53,8 +53,8 @@ class ObservabilityServiceProvider extends ServiceProvider
 
             foreach (['vue', 'react', 'svelte'] as $frontend) {
                 $this->publishes([
-                    __DIR__.'/../../resources/js/'.$frontend.'/pages' => resource_path('js/Pages/Observability'),
-                    __DIR__.'/../../resources/js/shared/observability.js' => resource_path('js/shared/observability.js'),
+                    __DIR__.'/../../resources/js/'.$frontend.'/pages'      => resource_path('js/Pages/Observability'),
+                    __DIR__.'/../../resources/js/shared/observability.js'  => resource_path('js/shared/observability.js'),
                     __DIR__.'/../../resources/js/shared/observability.css' => resource_path('js/shared/observability.css'),
                 ], 'observability-'.$frontend);
             }

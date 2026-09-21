@@ -55,7 +55,7 @@ it('returns degraded for an unknown check', function () {
 it('returns active providers as a JSON list and includes both provider types', function () {
     config(['observability.providers' => [
         'disabled' => ['enabled' => false, 'type' => 'backend'],
-        'shared' => ['enabled' => true, 'type' => 'both'],
+        'shared'   => ['enabled' => true, 'type' => 'both'],
     ]]);
     $this->enableHealthRoutes();
     $this->getJson('/health/providers')->assertOk()->assertExactJson([

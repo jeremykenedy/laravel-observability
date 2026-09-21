@@ -5,9 +5,9 @@ return [
 
     // Null preserves the host application's existing UI Kit selection.
     'css_framework' => env('OBSERVABILITY_CSS'),
-    'frontend' => env('OBSERVABILITY_FRONTEND'),
-    'layout' => 'layouts.app',
-    'theme' => env('OBSERVABILITY_THEME', 'system'),
+    'frontend'      => env('OBSERVABILITY_FRONTEND'),
+    'layout'        => 'layouts.app',
+    'theme'         => env('OBSERVABILITY_THEME', 'system'),
 
     /*
     |--------------------------------------------------------------------------

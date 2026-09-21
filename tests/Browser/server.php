@@ -14,14 +14,14 @@ require __DIR__.'/../../vendor/autoload.php';
 
 $app = Application::create(options: ['extra' => ['providers' => [LivewireServiceProvider::class], 'dont-discover' => ['*']], 'load_environment_variables' => false]);
 $app['config']->set([
-    'app.key' => 'base64:'.base64_encode(str_repeat('b', 32)),
-    'session.driver' => 'array',
-    'database.default' => 'testing',
+    'app.key'                      => 'base64:'.base64_encode(str_repeat('b', 32)),
+    'session.driver'               => 'array',
+    'database.default'             => 'testing',
     'database.connections.testing' => ['driver' => 'sqlite', 'database' => ':memory:'],
-    'cache.default' => 'array',
-    'view.paths' => [__DIR__.'/../fixtures/views'],
-    'observability.health.route' => '/status/check',
-    'observability.css_framework' => $_GET['css'] ?? 'tailwind',
+    'cache.default'                => 'array',
+    'view.paths'                   => [__DIR__.'/../fixtures/views'],
+    'observability.health.route'   => '/status/check',
+    'observability.css_framework'  => $_GET['css'] ?? 'tailwind',
 ]);
 $app->register(ObservabilityServiceProvider::class);
 $app['auth']->setUser(new GenericUser(['id' => 1, 'name' => 'Test User']));

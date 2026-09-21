@@ -12,7 +12,9 @@ class FrameworkSettings
 
     public const FRONTENDS = ['blade', 'livewire', 'vue', 'react', 'svelte'];
 
-    public function __construct(protected Repository $config) {}
+    public function __construct(protected Repository $config)
+    {
+    }
 
     public function css(): string
     {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Jeremykenedy\LaravelObservability\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Jeremykenedy\LaravelObservability\Health\HealthChecker;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
@@ -24,7 +24,7 @@ class HealthController extends Controller
     public function dashboard(HealthChecker $checker, ProviderDetector $detector): View
     {
         return view('observability::dashboard', [
-            'healthData' => $checker->run(),
+            'healthData'   => $checker->run(),
             'providerData' => $detector->summary(),
         ]);
     }

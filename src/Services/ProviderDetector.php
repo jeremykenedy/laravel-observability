@@ -57,11 +57,11 @@ class ProviderDetector
 
         return [
             'detected' => $this->getDetected(),
-            'active' => $this->getActiveProviders(),
-            'backend' => $this->getProvidersByType('backend'),
+            'active'   => $this->getActiveProviders(),
+            'backend'  => $this->getProvidersByType('backend'),
             'frontend' => $this->getProvidersByType('frontend'),
-            'testing' => $this->getProvidersByType('testing'),
-            'uptime' => array_keys($this->getUptimeProviders()),
+            'testing'  => $this->getProvidersByType('testing'),
+            'uptime'   => array_keys($this->getUptimeProviders()),
         ];
     }
 

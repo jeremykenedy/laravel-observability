@@ -11,7 +11,9 @@ use RuntimeException;
 
 class EnvironmentFile
 {
-    public function __construct(protected Application $app, protected Filesystem $files) {}
+    public function __construct(protected Application $app, protected Filesystem $files)
+    {
+    }
 
     public function path(): string
     {

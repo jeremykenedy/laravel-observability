@@ -10,8 +10,8 @@ use Jeremykenedy\LaravelObservability\Console\Concerns\HasInstallPrompts;
 use Jeremykenedy\LaravelObservability\Services\ProviderDetector;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\table;
 use function Laravel\Prompts\password;
+use function Laravel\Prompts\table;
 
 class UpdateCommand extends Command
 {

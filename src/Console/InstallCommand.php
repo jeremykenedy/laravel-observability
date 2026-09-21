@@ -7,17 +7,15 @@ namespace Jeremykenedy\LaravelObservability\Console;
 use Illuminate\Console\Command;
 use Jeremykenedy\LaravelObservability\Console\Concerns\HandlesFrameworkSetup;
 use Jeremykenedy\LaravelObservability\Console\Concerns\HasInstallPrompts;
+use Symfony\Component\Process\Process;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\note;
+use function Laravel\Prompts\password;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
-use function Laravel\Prompts\password;
-
-use Symfony\Component\Process\Process;
-
 use function Laravel\Prompts\warning;
 
 class InstallCommand extends Command

@@ -43,7 +43,8 @@ it('uses the named health route for customized endpoints and keeps sibling URLs 
 
 it('serves only the dashboard asset allowlist', function (string $asset, string $type) {
     $this->enableHealthRoutes();
-    $this->get('/health/assets/'.$asset)->assertOk()->assertHeader('Content-Type', $type);
+    $response = $this->get('/health/assets/'.$asset)->assertOk();
+    expect(strtolower($response->headers->get('Content-Type')))->toBe($type);
     $this->get('/health/assets/observability.php')->assertNotFound();
 })->with([['observability.css', 'text/css; charset=utf-8'], ['observability.js', 'text/javascript; charset=utf-8'], ['blade.js', 'text/javascript; charset=utf-8']]);
 
