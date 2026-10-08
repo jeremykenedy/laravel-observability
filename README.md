@@ -11,9 +11,6 @@ Health checks, monitoring provider discovery, and uptime status for Laravel appl
 </p>
 
 <p align="center">
-    
-    
-    
     <a href="https://packagist.org/packages/jeremykenedy/laravel-observability"><img src="https://poser.pugx.org/jeremykenedy/laravel-observability/d/total.svg" alt="Total Downloads"></a>
     <a href="https://packagist.org/packages/jeremykenedy/laravel-observability"><img src="https://poser.pugx.org/jeremykenedy/laravel-observability/v/stable.svg" alt="Latest Stable Version"></a>
     <a href="https://github.com/jeremykenedy/laravel-observability/actions/workflows/tests.yml"><img src="https://github.com/jeremykenedy/laravel-observability/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
